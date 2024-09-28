@@ -1,4 +1,4 @@
-package com.example.poshinda
+package com.example.utpanna
 
 import io.flutter.embedding.android.FlutterActivity
 

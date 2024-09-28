@@ -2,7 +2,18 @@ import 'package:flutter/material.dart';
 import 'screens/deals_screen.dart';
 import 'screens/login_screen.dart'; // Add this import
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: "not found",
+      authDomain: "utpanna-dev.firebaseapp.com",
+      projectId: "utpanna-dev",
+      storageBucket: "utpanna-dev.appspot.com",
+      messagingSenderId: "340480522275",
+      appId: "1:340480522275:web:a5ee3291e33894978ad996"
+    ),
+  );
   runApp(MyApp());
 }
 

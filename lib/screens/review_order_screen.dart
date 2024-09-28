@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 // Add these imports
-import 'package:poshinda/screens/order_history_screen.dart';
-import 'package:poshinda/screens/deals_screen.dart';
+import 'package:utpanna/screens/order_history_screen.dart';
+import 'package:utpanna/screens/deals_screen.dart';
 
 class ReviewOrderScreen extends StatelessWidget {
   const ReviewOrderScreen({Key? key}) : super(key: key);
