@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "utpanna-dev",
     "public": "public",
     "ignore": [
       "firebase.json",

@@ -3,7 +3,6 @@ import 'screens/deals_screen.dart';
 import 'screens/login_screen.dart'; // Add this import
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,7 +1,8 @@
 class Constants {
   // Base URL for your API
   // static const String apiUrl = 'http://127.0.0.1:5000/';
-  static const String apiUrl = 'http://192.168.131.92:5000/';
+  // static const String apiUrl = 'http://192.168.131.92:5000/';
+  static const String apiUrl = 'https://utpanna-backend-340480522275.us-central1.run.app';
 
   // JWT token for authentication
   // Note: In a real app, this should be stored securely and updated dynamically
