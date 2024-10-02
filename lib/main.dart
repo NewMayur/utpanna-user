@@ -3,12 +3,14 @@ import 'screens/deals_screen.dart';
 import 'screens/login_screen.dart'; // Add this import
 
 import 'package:firebase_core/firebase_core.dart';
+import 'screens/phone_auth_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: FirebaseOptions(
-      apiKey: "not found",
+      apiKey: "AIzaSyDiVSLs3goLrzmndUyLa9Sjp0gs4ovHHhA",
       authDomain: "utpanna-dev.firebaseapp.com",
       projectId: "utpanna-dev",
       storageBucket: "utpanna-dev.appspot.com",
@@ -36,12 +38,13 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => LoginScreen(),
-        '/': (context) => LoginScreen(),
-        // Add other routes here
-      },
+      home: DealsScreen(),
+      // initialRoute: '/login',
+      // routes: {
+      //   '/login': (context) => LoginScreen(),
+      //   '/': (context) => LoginScreen(),
+      //   // Add other routes here
+      // },
     );
   }
 }
