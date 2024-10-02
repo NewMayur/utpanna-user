@@ -33,11 +33,18 @@ class _DealsScreenState extends State<DealsScreen> {
     });
 
     try {
+      // Get the Firebase ID token
+      String? idToken = await _authService.getIdToken();
+
+      if (idToken == null) {
+        throw Exception('User not authenticated');
+      }
+
       final response = await http.get(
         Uri.parse('${Constants.apiUrl}/deals'),
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer ${widget.token}',
+          'Authorization': 'Bearer $idToken',
         },
       );
 
@@ -48,7 +55,7 @@ class _DealsScreenState extends State<DealsScreen> {
           isLoading = false;
         });
       } else {
-        throw Exception('Failed to load deals');
+        throw Exception('Failed to load deals: ${response.statusCode} ${response.body}');
       }
     } catch (e) {
       setState(() {

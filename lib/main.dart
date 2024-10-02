@@ -3,6 +3,7 @@ import 'screens/deals_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/phone_auth_screen.dart';
 import 'services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,18 +39,29 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _authService.isSessionValid(),
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
-        } else {
-          if (snapshot.data == true) {
-            return DealsScreen();
-          } else {
+        if (snapshot.connectionState == ConnectionState.active) {
+          User? user = snapshot.data;
+          if (user == null) {
             return PhoneAuthScreen();
           }
+          return FutureBuilder<bool>(
+            future: _authService.isSessionValid(),
+            builder: (context, sessionSnapshot) {
+              if (sessionSnapshot.connectionState == ConnectionState.done) {
+                if (sessionSnapshot.data == true) {
+                  return DealsScreen();
+                } else {
+                  return PhoneAuthScreen();
+                }
+              }
+              return CircularProgressIndicator();
+            },
+          );
         }
+        return CircularProgressIndicator();
       },
     );
   }

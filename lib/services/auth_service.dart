@@ -5,6 +5,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  Future<String?> getIdToken() async {
+  User? user = _auth.currentUser;
+    if (user != null) {
+      return await user.getIdToken();
+    }
+    return null;
+  }
+
   Future<void> verifyPhoneNumber(
     String phoneNumber,
     Function(String) onCodeSent,
@@ -51,6 +59,9 @@ class AuthService {
   }
 
   Future<bool> isSessionValid() async {
+    if (_auth.currentUser == null) {
+      return false;
+    }
     final prefs = await SharedPreferences.getInstance();
     final expiryString = prefs.getString('sessionExpiry');
     if (expiryString == null) return false;

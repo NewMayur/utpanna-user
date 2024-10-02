@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/deal.dart';
+import '../services/auth_service.dart';
 
 class DealDetailScreen extends StatelessWidget {
   final Deal deal;
+  final AuthService _authService = AuthService();
 
-  const DealDetailScreen({Key? key, required this.deal}) : super(key: key);
+  DealDetailScreen({Key? key, required this.deal}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -190,15 +192,37 @@ class DealDetailScreen extends StatelessWidget {
             ),
             ElevatedButton(
               child: Text('Confirm Participation'),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                _showParticipationConfirmation(context);
+                await _participateInDeal(context);
               },
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _participateInDeal(BuildContext context) async {
+    try {
+      String? idToken = await _authService.getIdToken();
+      if (idToken == null) {
+        throw Exception('User not authenticated');
+      }
+      
+      // Simulate API call with token
+      // In a real scenario, you would make an HTTP request to your backend
+      await Future.delayed(Duration(seconds: 1));
+      
+      _showParticipationConfirmation(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showParticipationConfirmation(BuildContext context) {
