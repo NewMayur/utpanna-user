@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'auth_service.dart';
-import 'screens/deals_screen.dart';
+// import 'package:flutter/foundation.dart' show kIsWeb;
+import '../services/auth_service.dart';
+import 'deals_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
@@ -109,7 +109,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Successfully signed in')),
         );
-        // Navigate to the next screen or perform any other action after successful sign-in
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => DealsScreen()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to sign in. Please try again.')),

@@ -3,13 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/deal.dart';
 import '../utils/constants.dart';
-import './deal_detail_screen.dart'; // Import the deal_detail_screen.dart file
+import './deal_detail_screen.dart';
+import '../services/auth_service.dart';
+import 'phone_auth_screen.dart';
 
 class DealsScreen extends StatefulWidget {
-  final String token;
-
-  const DealsScreen({Key? key, required this.token}) : super(key: key);
-
+  
   @override
   _DealsScreenState createState() => _DealsScreenState();
 }
@@ -20,6 +19,7 @@ class _DealsScreenState extends State<DealsScreen> {
   String searchQuery = '';
   String selectedCategory = '';
   String sortBy = '';
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -37,7 +37,7 @@ class _DealsScreenState extends State<DealsScreen> {
         Uri.parse('${Constants.apiUrl}/deals'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.token}',
+          // 'Authorization': 'Bearer ${widget.token}',
         },
       );
 
@@ -63,6 +63,20 @@ class _DealsScreenState extends State<DealsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Deals'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () async {
+              await _authService.signOut();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => PhoneAuthScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
