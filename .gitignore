@@ -46,4 +46,4 @@ app.*.map.json
 .firebase/hosting.cHVibGlj.cache
 
 # Firebase files
-.firebase/*
+.firebase/
