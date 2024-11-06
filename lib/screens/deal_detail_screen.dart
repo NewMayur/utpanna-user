@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/deal.dart';
 import '../services/auth_service.dart';
+import '../models/user_details.dart';  // New import for user details model
+import 'package:http/http.dart' as http;  // For API calls
+import 'dart:convert';  // For JSON encoding/decoding
+import '../utils/constants.dart';  // For API URLs
 
 class DealDetailScreen extends StatelessWidget {
   final Deal deal;
@@ -176,25 +180,66 @@ class DealDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showParticipateDialog(BuildContext context) {
+  void _showUserDetailsDialog(BuildContext context) {
+  final nameController = TextEditingController();
+  final addressController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Participate in Deal'),
-          content: Text("You'll be notified once the deal reaches the required number of participants for payment."),
-          actions: <Widget>[
+          title: Text('Enter Your Details'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(labelText: 'Address'),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
             TextButton(
               child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             ElevatedButton(
-              child: Text('Confirm Participation'),
+              child: Text('Save'),
               onPressed: () async {
-                Navigator.of(context).pop();
-                await _participateInDeal(context);
+                String? idToken = await _authService.getIdToken();
+                if (idToken == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Authentication error')),
+                  );
+                  return;
+                }
+
+                bool detailsUpdated = await _authService.updateUserDetails(
+                  nameController.text,
+                  addressController.text,
+                  idToken,
+                );
+
+                if (detailsUpdated) {
+                  bool participated = await _authService.participateInDeal(deal.id, idToken);
+                  if (participated) {
+                    Navigator.of(context).pop(); // Close details dialog
+                    _showParticipationConfirmation(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to participate in deal')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to update user details')),
+                  );
+                }
               },
             ),
           ],
@@ -203,32 +248,57 @@ class DealDetailScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _participateInDeal(BuildContext context) async {
-    try {
-      String? idToken = await _authService.getIdToken();
-      if (idToken == null) {
-        throw Exception('User not authenticated');
-      }
-      
-      // Simulate API call with token
-      // In a real scenario, you would make an HTTP request to your backend
-      await Future.delayed(Duration(seconds: 1));
-      
-      _showParticipationConfirmation(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+  void _showParticipateDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Participate in Deal'),
+          content: Text("Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to participate in this deal?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              child: Text('Confirm'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showUserDetailsDialog(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
+
+  // Future<void> _participateInDeal(BuildContext context) async {
+  //   try {
+  //     String? idToken = await _authService.getIdToken();
+  //     if (idToken == null) {
+  //       throw Exception('User not authenticated');
+  //     }
+      
+  //     // Simulate API call with token
+  //     // In a real scenario, you would make an HTTP request to your backend
+  //     await Future.delayed(Duration(seconds: 1));
+      
+  //     _showParticipationConfirmation(context);
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Error: ${e.toString()}'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
 
   void _showParticipationConfirmation(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Successfully participated in the deal!'),
+        content: Text('Participation successful!'),
         duration: Duration(seconds: 2),
       ),
     );

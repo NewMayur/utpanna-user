@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;  // For API calls
+import 'dart:convert';  // For JSON encoding/decoding
+import '../utils/constants.dart';  // For API URLs
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -74,5 +77,39 @@ class AuthService {
     await _auth.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('sessionExpiry');
+  }
+
+  Future<bool> updateUserDetails(String name, String address, String idToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Constants.apiUrl}/user/details'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: jsonEncode({
+          'name': name,
+          'address': address,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> participateInDeal(int dealId, String idToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Constants.apiUrl}/deals/$dealId/participate'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 }
