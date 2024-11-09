@@ -8,7 +8,6 @@ import '../services/auth_service.dart';
 import 'phone_auth_screen.dart';
 
 class DealsScreen extends StatefulWidget {
-  
   @override
   _DealsScreenState createState() => _DealsScreenState();
 }
@@ -16,10 +15,9 @@ class DealsScreen extends StatefulWidget {
 class _DealsScreenState extends State<DealsScreen> {
   List<Deal> deals = [];
   bool isLoading = true;
-  String searchQuery = '';
-  String selectedCategory = '';
-  String sortBy = '';
   final AuthService _authService = AuthService();
+  final Color accentColor = Color(0xFF44aa00);
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -33,9 +31,7 @@ class _DealsScreenState extends State<DealsScreen> {
     });
 
     try {
-      // Get the Firebase ID token
       String? idToken = await _authService.getIdToken();
-
       if (idToken == null) {
         throw Exception('User not authenticated');
       }
@@ -55,7 +51,7 @@ class _DealsScreenState extends State<DealsScreen> {
           isLoading = false;
         });
       } else {
-        throw Exception('Failed to load deals: ${response.statusCode} ${response.body}');
+        throw Exception('Failed to load deals');
       }
     } catch (e) {
       setState(() {
@@ -71,10 +67,15 @@ class _DealsScreenState extends State<DealsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Deals'),
+        title: Image.asset(
+          'web/icons/logo-full.png',
+          height: 32,
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.exit_to_app),
+            icon: Icon(Icons.exit_to_app, color: accentColor),
             onPressed: () async {
               await _authService.signOut();
               Navigator.of(context).pushReplacement(
@@ -84,183 +85,150 @@ class _DealsScreenState extends State<DealsScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Deal Catalog',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search deals...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          searchQuery = value;
-                        });
-                      },
-                    ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator(color: accentColor))
+          : CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                // Banner
+                SliverToBoxAdapter(
+                  child: Image.asset(
+                    'assets/images/banner.png',
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
                   ),
-                  SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Implement search functionality
-                    },
-                    child: Text('Search'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      value: selectedCategory,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedCategory = newValue!;
-                        });
-                      },
-                      items: <String>['', 'Seeds', 'Fertilizers', 'Pesticides', 'Tools']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value.isEmpty ? 'Filter by Category' : value),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      value: sortBy,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          sortBy = newValue!;
-                        });
-                      },
-                      items: <String>['', 'Price: Low to High', 'Price: High to Low', 'Popularity', 'Newest']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value.isEmpty ? 'Sort by' : value),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Expanded(
-                child: isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.75,
-                        ),
-                        itemCount: deals.length,
-                        itemBuilder: (context, index) {
-                          final deal = deals[index];
-                          return Card(
-                            elevation: 4,
+                ),
+                // Deals List
+                SliverPadding(
+                  padding: EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final deal = deals[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DealDetailScreen(deal: deal),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            margin: EdgeInsets.only(bottom: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Column(
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // Deal Image
                                 ClipRRect(
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(8),
+                                    bottomLeft: Radius.circular(8),
+                                  ),
                                   child: Image.network(
-                                    'https://placehold.co/300x200', // Placeholder image
-                                    height: 120,
-                                    width: double.infinity,
+                                    deal.images?.isNotEmpty == true 
+                                        ? deal.images![0] 
+                                        : 'https://placehold.co/300x400',
+                                    width: 120,
+                                    height: 160,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        deal.title,
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        deal.description,
-                                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: 8),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => DealDetailScreen(deal: deal),
-                                            ),
-                                          );
-                                        },
-                                        child: Text('View Deal'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                // Deal Details
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          deal.title,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(height: 8),
+                                        Text(
+                                          deal.description,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'MRP: ₹${deal.price.toStringAsFixed(2)}',
+                                              style: TextStyle(
+                                                decoration: TextDecoration.lineThrough,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                            SizedBox(width: 12),
+                                            Text(
+                                              '₹${(deal.price * 0.8).toStringAsFixed(2)}',
+                                              style: TextStyle(
+                                                color: accentColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
+                          ),
+                        );
+                      },
+                      childCount: deals.length,
+                    ),
+                  ),
+                ),
+                // Help Section
+                SliverToBoxAdapter(
+                  child: Container(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Need any help?',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            // Implement call functionality
+                          },
+                          icon: Icon(Icons.phone),
+                          label: Text('Call us now'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

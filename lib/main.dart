@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'screens/phone_auth_screen.dart';
 import 'services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'widgets/progress.dart';
 
 //dev
 void main() async {
@@ -60,6 +61,13 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: Colors.white, // or your preferred background color
+            body: circularProgress(),
+          );
+        }
+
         if (snapshot.connectionState == ConnectionState.active) {
           User? user = snapshot.data;
           if (user == null) {
@@ -68,18 +76,18 @@ class AuthWrapper extends StatelessWidget {
           return FutureBuilder<bool>(
             future: _authService.isSessionValid(),
             builder: (context, sessionSnapshot) {
-              if (sessionSnapshot.connectionState == ConnectionState.done) {
-                if (sessionSnapshot.data == true) {
-                  return DealsScreen();
-                } else {
-                  return PhoneAuthScreen();
-                }
+              // Show loading while checking session
+              if (sessionSnapshot.connectionState != ConnectionState.done) {
+                return Scaffold(body: circularProgress());
               }
-              return CircularProgressIndicator();
+              
+              return sessionSnapshot.data == true 
+                ? DealsScreen() 
+                : PhoneAuthScreen();
             },
           );
         }
-        return CircularProgressIndicator();
+        return Scaffold(body: circularProgress());
       },
     );
   }

@@ -1,106 +1,256 @@
 import 'package:flutter/material.dart';
 import '../models/deal.dart';
 import '../services/auth_service.dart';
-import '../models/user_details.dart';  // New import for user details model
-import 'package:http/http.dart' as http;  // For API calls
-import 'dart:convert';  // For JSON encoding/decoding
-import '../utils/constants.dart';  // For API URLs
+import '../models/user_details.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../utils/constants.dart';
 
-class DealDetailScreen extends StatelessWidget {
+class DealDetailScreen extends StatefulWidget {
   final Deal deal;
-  final AuthService _authService = AuthService();
 
   DealDetailScreen({Key? key, required this.deal}) : super(key: key);
 
   @override
+  _DealDetailScreenState createState() => _DealDetailScreenState();
+}
+
+class _DealDetailScreenState extends State<DealDetailScreen> {
+  final AuthService _authService = AuthService();
+  final Color accentColor = Color(0xFF44aa00);
+  int _currentImageIndex = 0;
+  final PageController _pageController = PageController();
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context),
-                SizedBox(height: 16),
-                _buildDealCard(context),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Deal Details',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Back to Catalog'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDealCard(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              'https://placehold.co/400x300',
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+          CustomScrollView(
+            slivers: [
+              // App Bar with Back Button
+              SliverAppBar(
+                backgroundColor: Colors.white,
+                leading: IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                floating: true,
+                pinned: false,
+              ),
+              // Image Carousel
+              SliverToBoxAdapter(
+                child: Container(
+                  height: 300,
+                  child: Stack(
+                    children: [
+                      PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentImageIndex = index;
+                          });
+                        },
+                        itemCount: widget.deal.images?.length ?? 1,
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            widget.deal.images?.isNotEmpty == true
+                                ? widget.deal.images![index]
+                                : 'https://placehold.co/400x300',
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
+                      // Pagination Indicators
+                      Positioned(
+                        bottom: 16,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            widget.deal.images?.length ?? 1,
+                            (index) => Container(
+                              width: 8,
+                              height: 8,
+                              margin: EdgeInsets.symmetric(horizontal: 4),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _currentImageIndex == index
+                                    ? accentColor
+                                    : Colors.grey.withOpacity(0.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Deal Content
+              SliverPadding(
+                padding: EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Title
+                    Text(
+                      widget.deal.title,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    // Prices
+                    Row(
+                      children: [
+                        Text(
+                          'MRP: ₹${widget.deal.price.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            decoration: TextDecoration.lineThrough,
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Text(
+                          '₹${(widget.deal.price * 0.8).toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: accentColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 24),
+                    // Participants Info
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Column(
+                            children: [
+                              Text(
+                                'Minimum',
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                '${widget.deal.min_participants}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            width: 1,
+                            height: 40,
+                            color: Colors.grey[300],
+                          ),
+                          Column(
+                            children: [
+                              Text(
+                                'Current',
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                '${widget.deal.current_participants}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    // Description
+                    Text(
+                      'Description',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      widget.deal.description,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        height: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: 32),
+                    // Need Help Section
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Need any help?',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              // Implement call functionality
+                            },
+                            icon: Icon(Icons.phone),
+                            label: Text('Call us now'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: accentColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 80), // Space for bottom button
+                  ]),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 16),
-          Text(
-            deal.title,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          Text(
-            deal.description,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
-          SizedBox(height: 16),
-          _buildDealInfo(),
-          SizedBox(height: 16),
-          _buildDealTerms(),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => _showParticipateDialog(context),
-            child: Text('Participate'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          // Participate Button
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: ElevatedButton(
+              onPressed: () => _showParticipateDialog(context),
+              child: Text(
+                'Participate in Deal',
+                style: TextStyle(fontSize: 16),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
           ),
         ],
@@ -108,81 +258,39 @@ class DealDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDealInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Deal Information',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        _buildInfoItem('Price', '₹${deal.price.toStringAsFixed(2)}'),
-        _buildInfoItem('Minimum Participants', '${deal.min_participants}'),
-        _buildInfoItem('Current Participants', '${deal.current_participants}'),
-        _buildInfoItem('Status', deal.status),
-      ],
-    );
-  }
-
-  Widget _buildInfoItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+  void _showParticipateDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Participate in Deal'),
+          content: Text(
+            "Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to participate in this deal?"
           ),
-          Text(
-            value,
-            style: TextStyle(fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDealTerms() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Deal Terms',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        _buildTermItem('Minimum participants: ${deal.min_participants}'),
-        _buildTermItem('Current participants: ${deal.current_participants}'),
-        _buildTermItem('Status: ${deal.status}'),
-        _buildTermItem('Payment method: Online payment'),
-      ],
-    );
-  }
-
-  Widget _buildTermItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.circle, size: 8, color: Colors.grey[600]),
-          SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              child: Text('Confirm'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showUserDetailsDialog(context);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showUserDetailsDialog(BuildContext context) {
-  final nameController = TextEditingController();
-  final addressController = TextEditingController();
+    final nameController = TextEditingController();
+    final addressController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -193,12 +301,22 @@ class DealDetailScreen extends StatelessWidget {
             children: [
               TextField(
                 controller: nameController,
-                decoration: InputDecoration(labelText: 'Name'),
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: accentColor),
+                  ),
+                ),
               ),
               SizedBox(height: 16),
               TextField(
                 controller: addressController,
-                decoration: InputDecoration(labelText: 'Address'),
+                decoration: InputDecoration(
+                  labelText: 'Address',
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: accentColor),
+                  ),
+                ),
                 maxLines: 3,
               ),
             ],
@@ -210,6 +328,9 @@ class DealDetailScreen extends StatelessWidget {
             ),
             ElevatedButton(
               child: Text('Save'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+              ),
               onPressed: () async {
                 String? idToken = await _authService.getIdToken();
                 if (idToken == null) {
@@ -226,9 +347,9 @@ class DealDetailScreen extends StatelessWidget {
                 );
 
                 if (detailsUpdated) {
-                  bool participated = await _authService.participateInDeal(deal.id, idToken);
+                  bool participated = await _authService.participateInDeal(widget.deal.id, idToken);
                   if (participated) {
-                    Navigator.of(context).pop(); // Close details dialog
+                    Navigator.of(context).pop();
                     _showParticipationConfirmation(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -248,58 +369,12 @@ class DealDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showParticipateDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Participate in Deal'),
-          content: Text("Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to participate in this deal?"),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            ElevatedButton(
-              child: Text('Confirm'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showUserDetailsDialog(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Future<void> _participateInDeal(BuildContext context) async {
-  //   try {
-  //     String? idToken = await _authService.getIdToken();
-  //     if (idToken == null) {
-  //       throw Exception('User not authenticated');
-  //     }
-      
-  //     // Simulate API call with token
-  //     // In a real scenario, you would make an HTTP request to your backend
-  //     await Future.delayed(Duration(seconds: 1));
-      
-  //     _showParticipationConfirmation(context);
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Error: ${e.toString()}'),
-  //         backgroundColor: Colors.red,
-  //       ),
-  //     );
-  //   }
-  // }
-
   void _showParticipationConfirmation(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Participation successful!'),
         duration: Duration(seconds: 2),
+        backgroundColor: accentColor,
       ),
     );
   }

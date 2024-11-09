@@ -1,0 +1,103 @@
+1. On the login screen as given in the phone auth.png , Bring logo.png, phone number and otp input at the center of the screen to make it look like a standard UI design
+    1. /web/icons/
+    - logo-full.png
+2. on the home screen.png, here are the requirements
+    1. Show a small wide banner saved locally in the assets/images/banner.png. The banner will be shown at the top but when scrolled with list underneath gets scrolled up. For now I’ll hardcode the path to the banner which will be locally saved in the asset directory. Basically it won't be stuck of top.it will be scrollable.
+    2. Instead of showing grid on the mobile screen show list of cards vertically just like the given UI design in the home screen.png. which includes, 3×4 image, Title, description with 3 lines, MRP and deal price in the next line. The response for the /deals GET api now looks like 
+        
+        {
+        "created_at": "2024-11-08 12:42:14",
+        "current_participants": 1,
+        "description": "Amazing summer discount on selected items",
+        "id": 15,
+        "images": [
+        "https://storage.googleapis.com/utpanna-dev-images/deals/15/c470d272-8113-48e8-a942-51d2f70661c6_sample-image-1.jpg",
+        "https://storage.googleapis.com/utpanna-dev-images/deals/15/2ebeaf90-d6c2-4dbd-859a-783652fdb6ce_sample-image-2.jpg",
+        "https://storage.googleapis.com/utpanna-dev-images/deals/15/ba33e62b-fb05-445f-9199-11255d12fd43_sample-image-3.jpg"
+        ],
+        "min_participants": 10,
+        "price": 999.99,
+        "status": "open",
+        "title": "Summer Special Deal",
+        "updated_at": "2024-11-09 08:37:34"
+        }
+        
+        Only select the first image from the recieved list of images in json
+        
+    
+    c. Clicking on anywhere on the card will take user to its deal- detail page.
+    
+    d. Note for rendering the internet image get help from this already implemenmted and workign code 
+    
+    ```jsx
+    class DealImage {
+      final int id;
+      final String imageUrl;
+      final String createdAt;
+    
+      DealImage({
+        required this.id,
+        required this.imageUrl,
+        required this.createdAt,
+      });
+    
+      factory DealImage.fromJson(Map<String, dynamic> json) {
+        return DealImage(
+          id: json['id'],
+          imageUrl: json['image_url'],
+          createdAt: json['created_at'],
+        );
+      }
+    }
+    
+    import 'package:image_picker/image_picker.dart';
+    import 'dart:io';
+    import 'package:flutter/foundation.dart' show kIsWeb;
+    import 'package:dio/dio.dart';
+    
+    final List<dynamic>? images;
+    
+    factory deal
+    images: json['images'] as List<dynamic>?,
+    
+    SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _selectedImages.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: kIsWeb 
+                          // For web platform
+                          ? Image.network(
+                              _selectedImages[index].path,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                            )
+                          // For mobile platforms
+                          : Image.file(
+                              File(_selectedImages[index].path),
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+    
+    for (var i = 0; i < images.length; i++) {
+          List<int> imageBytes = await images[i].readAsBytes();
+          String fileName = images[i].name;
+          formData.files.add(
+            MapEntry(
+              'images',
+              MultipartFile.fromBytes(
+                imageBytes,
+                filename: fileName,
+              ),
+            ),
+          );
+        }
+    ```
+    
+3. on the deal-detail screen, as shown in the deal details.png at the top deal images will be shown with three level pagination, After images, title and MRP and deal price, Will be shown. for100ed by minimum participant and current participants., Then full description. At the bottom wide call to action button for Participating in the deal
+4. Also I want to add a UI element with text and button. Text will be Need any help? and button will be call as now with an call icon.
+5. I like the standard material ui design. Just if we can manage to have the one accent color which is 44aa00 as the accent green colour wherever required then it will be awesome.

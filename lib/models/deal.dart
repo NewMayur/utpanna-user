@@ -6,6 +6,7 @@ class Deal {
   final int min_participants;
   final int current_participants;
   final String status;
+  final List<String>? images;
 
   Deal({
     required this.id,
@@ -15,6 +16,7 @@ class Deal {
     required this.min_participants,
     required this.current_participants,
     required this.status,
+    this.images,
   });
 
   factory Deal.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Deal {
       min_participants: json['min_participants'],
       current_participants: json['current_participants'],
       status: json['status'],
+      images: json['images'] != null ? List<String>.from(json['images']) : null,
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter/foundation.dart' show kIsWeb;
 import '../services/auth_service.dart';
 import 'deals_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,38 +16,106 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   bool _isLoading = false;
   bool _codeSent = false;
 
+  final Color accentColor = Color(0xFF44aa00);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Phone Authentication')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _phoneController,
-              decoration: InputDecoration(labelText: 'Phone Number'),
-              keyboardType: TextInputType.phone,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Logo
+                Center(
+                  child: Image.asset(
+                    'web/icons/logo-full.png',
+                    height: 80,
+                  ),
+                ),
+                SizedBox(height: 48),
+                // Phone Number Input
+                TextField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: accentColor),
+                    ),
+                    prefixIcon: Icon(Icons.phone, color: accentColor),
+                  ),
+                  keyboardType: TextInputType.phone,
+                ),
+                SizedBox(height: 16),
+                // Verify Button
+                if (!_codeSent)
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _verifyPhoneNumber,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentColor,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _isLoading 
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          'Verify',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                  ),
+                // OTP Input and Sign In
+                if (_codeSent) ...[
+                  SizedBox(height: 24),
+                  TextField(
+                    controller: _otpController,
+                    decoration: InputDecoration(
+                      labelText: 'OTP',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: accentColor),
+                      ),
+                      prefixIcon: Icon(Icons.lock_outline, color: accentColor),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _signInWithOTP,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentColor,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Sign In',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _verifyPhoneNumber,
-              child: _isLoading ? CircularProgressIndicator() : Text('Verify Phone Number'),
-            ),
-            if (_codeSent) ...[
-              SizedBox(height: 16),
-              TextField(
-                controller: _otpController,
-                decoration: InputDecoration(labelText: 'OTP'),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _signInWithOTP,
-                child: Text('Sign In'),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
@@ -88,10 +155,6 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
