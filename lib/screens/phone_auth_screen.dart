@@ -18,6 +18,15 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
 
   final Color accentColor = Color(0xFF44aa00);
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: accentColor,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,15 +38,13 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo
                 Center(
                   child: Image.asset(
-                    'web/icons/logo-full.png',
+                    'assets/icons/logo-full.png',
                     height: 80,
                   ),
                 ),
                 SizedBox(height: 48),
-                // Phone Number Input
                 TextField(
                   controller: _phoneController,
                   decoration: InputDecoration(
@@ -54,7 +61,6 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   keyboardType: TextInputType.phone,
                 ),
                 SizedBox(height: 16),
-                // Verify Button
                 if (!_codeSent)
                   ElevatedButton(
                     onPressed: _isLoading ? null : _verifyPhoneNumber,
@@ -76,10 +82,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                         )
                       : Text(
                           'Verify',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                   ),
-                // OTP Input and Sign In
                 if (_codeSent) ...[
                   SizedBox(height: 24),
                   TextField(
@@ -109,7 +114,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     ),
                     child: Text(
                       'Sign In',
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
                 ],
@@ -135,55 +140,41 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
             _isLoading = false;
             _codeSent = true;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Verification code sent')),
-          );
+          _showSnackBar('Verification code sent');
         },
         (String error) {
           setState(() {
             _isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $error')),
-          );
+          _showSnackBar('Error: $error');
         },
       );
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      _showSnackBar('Error: $e');
     }
   }
 
   Future<void> _signInWithOTP() async {
     if (_verificationId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Verification ID is null. Please try again.')),
-      );
+      _showSnackBar('Verification ID is null. Please try again.');
       return;
     }
 
     try {
       UserCredential userCredential = await _authService.signInWithOTP(_verificationId!, _otpController.text);
       if (userCredential.user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Successfully signed in')),
-        );
+        _showSnackBar('Successfully signed in');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => DealsScreen()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to sign in. Please try again.')),
-        );
+        _showSnackBar('Failed to sign in. Please try again.');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      _showSnackBar('Error: $e');
     }
   }
 }

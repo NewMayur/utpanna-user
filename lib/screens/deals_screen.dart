@@ -63,12 +63,25 @@ class _DealsScreenState extends State<DealsScreen> {
     }
   }
 
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'pending':
+        return Colors.orange;
+      case 'completed':
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Image.asset(
-          'web/icons/logo-full.png',
+          'assets/icons/logo-full.png',
           height: 32,
         ),
         backgroundColor: Colors.white,
@@ -90,7 +103,6 @@ class _DealsScreenState extends State<DealsScreen> {
           : CustomScrollView(
               controller: _scrollController,
               slivers: [
-                // Banner
                 SliverToBoxAdapter(
                   child: Image.asset(
                     'assets/images/banner.png',
@@ -99,7 +111,6 @@ class _DealsScreenState extends State<DealsScreen> {
                     fit: BoxFit.cover,
                   ),
                 ),
-                // Deals List
                 SliverPadding(
                   padding: EdgeInsets.all(16),
                   sliver: SliverList(
@@ -123,7 +134,6 @@ class _DealsScreenState extends State<DealsScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Deal Image
                                 ClipRRect(
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(8),
@@ -138,7 +148,6 @@ class _DealsScreenState extends State<DealsScreen> {
                                     fit: BoxFit.cover,
                                   ),
                                 ),
-                                // Deal Details
                                 Expanded(
                                   child: Padding(
                                     padding: EdgeInsets.all(12),
@@ -183,6 +192,18 @@ class _DealsScreenState extends State<DealsScreen> {
                                             ),
                                           ],
                                         ),
+                                        SizedBox(height: 8),
+                                        Chip(
+                                          label: Text(
+                                            deal.status,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          backgroundColor: _getStatusColor(deal.status),
+                                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -196,7 +217,6 @@ class _DealsScreenState extends State<DealsScreen> {
                     ),
                   ),
                 ),
-                // Help Section
                 SliverToBoxAdapter(
                   child: Container(
                     padding: EdgeInsets.all(16),
@@ -214,8 +234,8 @@ class _DealsScreenState extends State<DealsScreen> {
                           onPressed: () {
                             // Implement call functionality
                           },
-                          icon: Icon(Icons.phone),
-                          label: Text('Call us now'),
+                          icon: Icon(Icons.phone, color: Colors.white),
+                          label: Text('Call us now', style: TextStyle(color: Colors.white)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentColor,
                             shape: RoundedRectangleBorder(

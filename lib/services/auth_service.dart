@@ -1,15 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:http/http.dart' as http;  // For API calls
-import 'dart:convert';  // For JSON encoding/decoding
-import '../utils/constants.dart';  // For API URLs
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../utils/constants.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<String?> getIdToken() async {
-  User? user = _auth.currentUser;
+    User? user = _auth.currentUser;
     if (user != null) {
       return await user.getIdToken();
     }
@@ -99,17 +99,19 @@ class AuthService {
   }
 
   Future<bool> participateInDeal(int dealId, String idToken) async {
-    try {
-      final response = await http.post(
-        Uri.parse('${Constants.apiUrl}/deals/$dealId/participate'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $idToken',
-        },
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
+    final response = await http.post(
+      Uri.parse('${Constants.apiUrl}/deals/$dealId/participate'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $idToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      final errorData = json.decode(response.body);
+      throw Exception(errorData['error'] ?? 'Failed to participate in deal');
     }
   }
 }

@@ -28,7 +28,6 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              // App Bar with Back Button
               SliverAppBar(
                 backgroundColor: Colors.white,
                 leading: IconButton(
@@ -38,7 +37,6 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                 floating: true,
                 pinned: false,
               ),
-              // Image Carousel
               SliverToBoxAdapter(
                 child: Container(
                   height: 300,
@@ -61,7 +59,6 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                           );
                         },
                       ),
-                      // Pagination Indicators
                       Positioned(
                         bottom: 16,
                         left: 0,
@@ -88,12 +85,10 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                   ),
                 ),
               ),
-              // Deal Content
               SliverPadding(
                 padding: EdgeInsets.all(16),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // Title
                     Text(
                       widget.deal.title,
                       style: TextStyle(
@@ -102,7 +97,6 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    // Prices
                     Row(
                       children: [
                         Text(
@@ -125,7 +119,6 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                       ],
                     ),
                     SizedBox(height: 24),
-                    // Participants Info
                     Container(
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -176,7 +169,6 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                       ),
                     ),
                     SizedBox(height: 24),
-                    // Description
                     Text(
                       'Description',
                       style: TextStyle(
@@ -194,7 +186,6 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                       ),
                     ),
                     SizedBox(height: 32),
-                    // Need Help Section
                     Container(
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -215,8 +206,8 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                             onPressed: () {
                               // Implement call functionality
                             },
-                            icon: Icon(Icons.phone),
-                            label: Text('Call us now'),
+                            icon: Icon(Icons.phone, color: Colors.white),
+                            label: Text('Call us now', style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: accentColor,
                               shape: RoundedRectangleBorder(
@@ -227,13 +218,12 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 80), // Space for bottom button
+                    SizedBox(height: 80),
                   ]),
                 ),
               ),
             ],
           ),
-          // Participate Button
           Positioned(
             left: 16,
             right: 16,
@@ -242,7 +232,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
               onPressed: () => _showParticipateDialog(context),
               child: Text(
                 'Participate in Deal',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
@@ -273,7 +263,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             ElevatedButton(
-              child: Text('Confirm'),
+              child: Text('Confirm', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
               ),
@@ -327,7 +317,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             ElevatedButton(
-              child: Text('Save'),
+              child: Text('Save', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
               ),
@@ -347,14 +337,21 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                 );
 
                 if (detailsUpdated) {
-                  bool participated = await _authService.participateInDeal(widget.deal.id, idToken);
-                  if (participated) {
+                  try {
+                    bool participated = await _authService.participateInDeal(widget.deal.id, idToken);
                     Navigator.of(context).pop();
-                    _showParticipationConfirmation(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to participate in deal')),
-                    );
+                    if (participated) {
+                      _showParticipationConfirmation(context, 'Participation successful!');
+                    }
+                  } catch (e) {
+                    String errorMessage = e.toString();
+                    if (errorMessage.contains('Already participated')) {
+                      _showParticipationConfirmation(context, 'You have already participated in this deal');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to participate in deal: $errorMessage')),
+                      );
+                    }
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -369,10 +366,10 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
     );
   }
 
-  void _showParticipationConfirmation(BuildContext context) {
+  void _showParticipationConfirmation(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Participation successful!'),
+        content: Text(message),
         duration: Duration(seconds: 2),
         backgroundColor: accentColor,
       ),
