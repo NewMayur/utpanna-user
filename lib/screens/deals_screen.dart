@@ -65,12 +65,12 @@ class _DealsScreenState extends State<DealsScreen> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'active':
+      case 'open':
         return Colors.green;
-      case 'pending':
+      case 'closed':
+        return Colors.red;
+      case 'starting soon':
         return Colors.orange;
-      case 'completed':
-        return Colors.blue;
       default:
         return Colors.grey;
     }
@@ -104,11 +104,13 @@ class _DealsScreenState extends State<DealsScreen> {
               controller: _scrollController,
               slivers: [
                 SliverToBoxAdapter(
-                  child: Image.asset(
-                    'assets/images/banner.png',
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
+                  child: AspectRatio(
+                    aspectRatio: 3.88, // 970/250 = 3.88
+                    child: Image.asset(
+                      'assets/images/banner.jpg',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 SliverPadding(
@@ -175,7 +177,7 @@ class _DealsScreenState extends State<DealsScreen> {
                                         Row(
                                           children: [
                                             Text(
-                                              'MRP: ₹${deal.price.toStringAsFixed(2)}',
+                                              'MRP: ₹${deal.mrp.toStringAsFixed(2)}',
                                               style: TextStyle(
                                                 decoration: TextDecoration.lineThrough,
                                                 color: Colors.grey[600],
@@ -183,7 +185,7 @@ class _DealsScreenState extends State<DealsScreen> {
                                             ),
                                             SizedBox(width: 12),
                                             Text(
-                                              '₹${(deal.price * 0.8).toStringAsFixed(2)}',
+                                              '₹${deal.deal_price.toStringAsFixed(2)}',
                                               style: TextStyle(
                                                 color: accentColor,
                                                 fontWeight: FontWeight.bold,
@@ -193,16 +195,28 @@ class _DealsScreenState extends State<DealsScreen> {
                                           ],
                                         ),
                                         SizedBox(height: 8),
-                                        Chip(
-                                          label: Text(
-                                            deal.status,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Chip(
+                                              label: Text(
+                                                deal.status,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              backgroundColor: _getStatusColor(deal.status),
+                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                             ),
-                                          ),
-                                          backgroundColor: _getStatusColor(deal.status),
-                                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                            Text(
+                                              '${deal.spotsAvailable} spots left',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),

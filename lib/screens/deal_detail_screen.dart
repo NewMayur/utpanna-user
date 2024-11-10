@@ -21,8 +21,24 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
   int _currentImageIndex = 0;
   final PageController _pageController = PageController();
 
+  String _getDealMessage() {
+    switch (widget.deal.status.toLowerCase()) {
+      case 'closed':
+        return "Group was completed and the deal is closed. We'll notify you once the deal reopens.";
+      case 'open':
+        return ""; // No message when deal is open
+      default:
+        return "We'll notify you once the deal starts.";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final dealMessage = _getDealMessage();
+    final showJoinButton = widget.deal.status.toLowerCase() == 'open';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final imageHeight = (screenWidth * 4) / 3; // 3:4 aspect ratio
+
     return Scaffold(
       body: Stack(
         children: [
@@ -39,7 +55,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
               ),
               SliverToBoxAdapter(
                 child: Container(
-                  height: 300,
+                  height: imageHeight,
                   child: Stack(
                     children: [
                       PageView.builder(
@@ -51,11 +67,14 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         },
                         itemCount: widget.deal.images?.length ?? 1,
                         itemBuilder: (context, index) {
-                          return Image.network(
-                            widget.deal.images?.isNotEmpty == true
-                                ? widget.deal.images![index]
-                                : 'https://placehold.co/400x300',
-                            fit: BoxFit.cover,
+                          return AspectRatio(
+                            aspectRatio: 3/4,
+                            child: Image.network(
+                              widget.deal.images?.isNotEmpty == true
+                                  ? widget.deal.images![index]
+                                  : 'https://placehold.co/300x400',
+                              fit: BoxFit.cover,
+                            ),
                           );
                         },
                       ),
@@ -100,7 +119,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                     Row(
                       children: [
                         Text(
-                          'MRP: ₹${widget.deal.price.toStringAsFixed(2)}',
+                          'MRP: ₹${widget.deal.mrp.toStringAsFixed(2)}',
                           style: TextStyle(
                             decoration: TextDecoration.lineThrough,
                             color: Colors.grey[600],
@@ -109,7 +128,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         ),
                         SizedBox(width: 16),
                         Text(
-                          '₹${(widget.deal.price * 0.8).toStringAsFixed(2)}',
+                          '₹${widget.deal.deal_price.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: accentColor,
                             fontWeight: FontWeight.bold,
@@ -131,7 +150,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                           Column(
                             children: [
                               Text(
-                                'Minimum',
+                                'Group Size',
                                 style: TextStyle(color: Colors.grey[600]),
                               ),
                               SizedBox(height: 4),
@@ -152,12 +171,12 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                           Column(
                             children: [
                               Text(
-                                'Current',
+                                'Spots Available',
                                 style: TextStyle(color: Colors.grey[600]),
                               ),
                               SizedBox(height: 4),
                               Text(
-                                '${widget.deal.current_participants}',
+                                '${widget.deal.spotsAvailable}',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -185,6 +204,24 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         height: 1.5,
                       ),
                     ),
+                    if (dealMessage.isNotEmpty) ...[
+                      SizedBox(height: 24),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          dealMessage,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                     SizedBox(height: 32),
                     Container(
                       padding: EdgeInsets.all(16),
@@ -224,25 +261,26 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
               ),
             ],
           ),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
-            child: ElevatedButton(
-              onPressed: () => _showParticipateDialog(context),
-              child: Text(
-                'Participate in Deal',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: accentColor,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          if (showJoinButton)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: ElevatedButton(
+                onPressed: () => _showParticipateDialog(context),
+                child: Text(
+                  'Join the deal',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accentColor,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -253,9 +291,9 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Participate in Deal'),
+          title: Text('Join the Deal'),
           content: Text(
-            "Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to participate in this deal?"
+            "Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to join this deal?"
           ),
           actions: <Widget>[
             TextButton(
@@ -341,15 +379,15 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                     bool participated = await _authService.participateInDeal(widget.deal.id, idToken);
                     Navigator.of(context).pop();
                     if (participated) {
-                      _showParticipationConfirmation(context, 'Participation successful!');
+                      _showParticipationConfirmation(context, 'Successfully joined the deal!');
                     }
                   } catch (e) {
                     String errorMessage = e.toString();
                     if (errorMessage.contains('Already participated')) {
-                      _showParticipationConfirmation(context, 'You have already participated in this deal');
+                      _showParticipationConfirmation(context, 'You have already joined this deal');
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to participate in deal: $errorMessage')),
+                        SnackBar(content: Text('Failed to join deal: $errorMessage')),
                       );
                     }
                   }
