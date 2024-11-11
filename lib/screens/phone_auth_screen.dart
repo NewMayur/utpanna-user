@@ -9,7 +9,7 @@ class PhoneAuthScreen extends StatefulWidget {
 }
 
 class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController(text: '+91 ');
   final TextEditingController _otpController = TextEditingController();
   final AuthService _authService = AuthService();
   String? _verificationId;
@@ -44,7 +44,18 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     height: 80,
                   ),
                 ),
-                SizedBox(height: 48),
+                SizedBox(height: 16), // Add spacing between logo and heading
+                Center(
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 32),
                 TextField(
                   controller: _phoneController,
                   decoration: InputDecoration(
@@ -59,6 +70,14 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     prefixIcon: Icon(Icons.phone, color: accentColor),
                   ),
                   keyboardType: TextInputType.phone,
+                  onChanged: (value) {
+                    if (!value.startsWith('+91')) {
+                      _phoneController.text = value;
+                      _phoneController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: _phoneController.text.length),
+                      );
+                    }
+                  },
                 ),
                 SizedBox(height: 16),
                 if (!_codeSent)
