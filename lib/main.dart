@@ -22,7 +22,7 @@ void main() async {
   runApp(MyApp());
 }
 
-//stag
+// stag
 // void main() async {
 //   WidgetsFlutterBinding.ensureInitialized();
 //   await Firebase.initializeApp(
