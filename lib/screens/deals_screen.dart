@@ -8,16 +8,22 @@ import '../services/auth_service.dart';
 import 'phone_auth_screen.dart';
 
 class DealsScreen extends StatefulWidget {
+  const DealsScreen({Key? key}) : super(key: key);
+
   @override
-  _DealsScreenState createState() => _DealsScreenState();
+  State<DealsScreen> createState() => _DealsScreenState();
 }
 
 class _DealsScreenState extends State<DealsScreen> {
   List<Deal> deals = [];
   bool isLoading = true;
   final AuthService _authService = AuthService();
-  final Color accentColor = Color(0xFF44aa00);
-  final ScrollController _scrollController = ScrollController();
+  final Color accentColor;
+  final ScrollController _scrollController;
+
+  _DealsScreenState()
+      : accentColor = const Color(0xFF44aa00),
+        _scrollController = ScrollController();
 
   @override
   void initState() {

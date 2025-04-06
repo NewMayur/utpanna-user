@@ -22,4 +22,7 @@ class Constants {
   // Other constants can be added here
   static const int timeoutDuration = 30; // in seconds
   static const String appName = 'Utpanna';
+
+  // API Endpoints
+  static const String productsApi = '$apiUrl/products';
 }

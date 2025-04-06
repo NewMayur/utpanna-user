@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:utpanna/screens/home_screen.dart';
 import 'screens/deals_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/phone_auth_screen.dart';
@@ -49,6 +50,10 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: AuthWrapper(),
+      routes: {
+        '/home': (context) => const HomeScreen(),
+        '/deals': (context) => const DealsScreen(),
+      },
     );
   }
 }
@@ -82,7 +87,7 @@ class AuthWrapper extends StatelessWidget {
               }
               
               return sessionSnapshot.data == true 
-                ? DealsScreen() 
+                ? const HomeScreen()
                 : PhoneAuthScreen();
             },
           );
