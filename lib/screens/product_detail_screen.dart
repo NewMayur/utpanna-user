@@ -49,12 +49,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> productData = jsonDecode(response.body);
         setState(() {
-          product = Product.fromJson(productData);
-          alternatives = productData['alternatives'] != null
-              ? (productData['alternatives'] as List)
-                  .map((e) => Alternative.fromJson(e))
-                  .toList()
-              : [];
+          // Product.fromJson now handles alternatives parsing
+          product = Product.fromJson(productData); 
+          // Remove redundant alternatives parsing here
           _isLoading = false;
         });
       } else {
@@ -170,10 +167,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                _buildDetailRow('Chemical Composition', 'Not Available'),
-                                _buildDetailRow('Mode of Action', 'Not Available'),
-                                _buildDetailRow('Active Ingredient', 'Not Available'),
-                                _buildDetailRow('Usage Directions', 'Not Available'),
+                                // Use actual data from product object
+                                _buildDetailRow('Chemical Composition', product!.chemicalComposition ?? 'N/A'),
+                                _buildDetailRow('Mode of Action', product!.modeOfAction ?? 'N/A'),
+                                _buildDetailRow('Active Ingredient', product!.activeIngredient ?? 'N/A'),
+                                _buildDetailRow('Usage Directions', product!.usageDirection ?? 'N/A'),
                               ],
                             ),
                             const SizedBox(height: 16),
@@ -205,14 +203,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            alternatives.isEmpty
+                            // Use alternatives from the product object
+                            (product!.alternatives == null || product!.alternatives!.isEmpty)
                                 ? const Text('No alternatives found')
                                 : ListView.builder(
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: alternatives.length,
+                                    itemCount: product!.alternatives!.length,
                                     itemBuilder: (context, index) {
-                                      final alternative = alternatives[index];
+                                      // Assuming AlternativeProduct model from product.dart is compatible
+                                      // with the expected Alternative model here.
+                                      // If not, this part might need further adjustment based on alternative.dart content.
+                                      final alternative = product!.alternatives![index]; 
                                       return Card(
                                         margin: const EdgeInsets.symmetric(vertical: 4),
                                         child: InkWell(

@@ -3,8 +3,8 @@ class Alternative {
   final int productId;
   final String title;
   final String imageUrl;
-  final int price;
-  final int savings;
+  final double price; // Changed to double
+  final double savings; // Changed to double
   final String chemicalComposition;
   final String modeOfAction;
   final String activeIngredient;
@@ -16,8 +16,8 @@ class Alternative {
     required this.productId,
     required this.title,
     required this.imageUrl,
-    required this.price,
-    required this.savings,
+    required this.price, // Changed to double
+    required this.savings, // Changed to double
     required this.chemicalComposition,
     required this.modeOfAction,
     required this.activeIngredient,
@@ -31,8 +31,8 @@ class Alternative {
       productId: _parseToInt(json['product_id']),
       title: (json['title'] ?? '').toString(),
       imageUrl: (json['image_url'] ?? '').toString(),
-      price: _parseToInt(json['price']),
-      savings: _parseToInt(json['savings']),
+      price: _parseDouble(json['price']), // Use _parseDouble
+      savings: _parseDouble(json['savings']), // Use _parseDouble
       chemicalComposition: (json['chemical_composition'] ?? '').toString(),
       modeOfAction: (json['mode_of_action'] ?? '').toString(),
       activeIngredient: (json['active_ingredient'] ?? '').toString(),
@@ -50,5 +50,14 @@ class Alternative {
     if (value is double) return value.toInt();
     if (value is String) return int.tryParse(value) ?? 0;
     return 0;
+  }
+
+  // Helper method to safely convert to double (copied from product.dart)
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 }

@@ -69,9 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Remove back button
         title: Image.asset(
           'assets/icons/logo-full.png',
-          height: 48,
+          height: 38.4, // Reduced height by 20%
         ),
         actions: [
           TextButton(

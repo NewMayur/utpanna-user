@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
-import 'deals_screen.dart';
+import 'home_screen.dart'; // Import the HomeScreen
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
@@ -187,7 +187,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       if (userCredential.user != null) {
         _showSnackBar('Successfully signed in');
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => DealsScreen()),
+          MaterialPageRoute(builder: (context) => HomeScreen()), // Navigate to HomeScreen
         );
       } else {
         _showSnackBar('Failed to sign in. Please try again.');

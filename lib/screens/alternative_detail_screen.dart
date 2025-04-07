@@ -105,12 +105,18 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            Image.network(
-                              alternative!.imageUrl,
-                              width: double.infinity,
-                              height: 250,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
+                            // Replicate image layout from ProductDetailScreen
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: MediaQuery.of(context).size.height * 0.3,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    alternative!.imageUrl,
+                                    fit: BoxFit.cover, // Keep fit: BoxFit.cover
+                                    loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Center(
                                   child: CircularProgressIndicator(
@@ -122,9 +128,13 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                                 );
                               },
                               errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.error, size: 250);
+                                // Match icon size from ProductDetailScreen (was 200)
+                                return const Icon(Icons.error, size: 200); 
                               },
-                            ),
+                            ), // Closes Image.network
+                           ), // Closes ClipRRect
+                          ), // Closes ConstrainedBox
+                         ), // Closes Center
                             const SizedBox(height: 16),
                             _buildDetailRow('Price', '₹${alternative!.price}'),
                             _buildDetailRow('Savings', '₹${alternative!.savings}'),
