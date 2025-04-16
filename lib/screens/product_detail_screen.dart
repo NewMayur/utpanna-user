@@ -19,9 +19,13 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Product? product;
-  List<Alternative> alternatives = [];
+  // List<Alternative> alternatives = []; // Alternatives are now part of the Product model
   bool _isLoading = true;
   String _errorMessage = '';
+
+  // State for PageView
+  final PageController _pageController = PageController();
+  int _currentImageIndex = 0;
 
   @override
   void initState() {
@@ -102,35 +106,75 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Product Image (max 30% of screen)
-                            Center(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: MediaQuery.of(context).size.height * 0.3,
+                            // Product Image PageView
+                            if (product!.imageUrls.isNotEmpty)
+                              Container(
+                                // Constrain height similar to before, adjust as needed
+                                height: MediaQuery.of(context).size.height * 0.35, 
+                                child: Stack(
+                                  alignment: Alignment.bottomCenter,
+                                  children: [
+                                    PageView.builder(
+                                      controller: _pageController,
+                                      itemCount: product!.imageUrls.length,
+                                      onPageChanged: (index) {
+                                        setState(() {
+                                          _currentImageIndex = index;
+                                        });
+                                      },
+                                      itemBuilder: (context, index) {
+                                        return Padding(
+                                          // Add padding around images if desired
+                                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(10),
+                                            child: Image.network(
+                                              product!.imageUrls[index],
+                                              fit: BoxFit.cover,
+                                              loadingBuilder: (context, child, loadingProgress) {
+                                                if (loadingProgress == null) return child;
+                                                return const Center(child: CircularProgressIndicator());
+                                              },
+                                              errorBuilder: (context, error, stackTrace) {
+                                                return const Center(child: Icon(Icons.error, size: 50, color: Colors.grey));
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    // Page Indicators
+                                    Positioned(
+                                      bottom: 10.0,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: List.generate(product!.imageUrls.length, (index) {
+                                          return Container(
+                                            width: 8.0,
+                                            height: 8.0,
+                                            margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: _currentImageIndex == index
+                                                  ? Theme.of(context).primaryColor // Use theme color
+                                                  : Colors.grey.withOpacity(0.6),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: ClipRRect(
+                              )
+                            else // Placeholder if no images
+                              Container(
+                                height: MediaQuery.of(context).size.height * 0.3,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    product!.imageUrl,
-                                    fit: BoxFit.cover,
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Center(
-                                        child: CircularProgressIndicator(
-                                          value: loadingProgress.expectedTotalBytes != null
-                                              ? loadingProgress.cumulativeBytesLoaded /
-                                                  loadingProgress.expectedTotalBytes!
-                                              : null,
-                                        ),
-                                      );
-                                    },
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(Icons.error, size: 200);
-                                    },
-                                  ),
                                 ),
+                                child: const Center(child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey)),
                               ),
-                            ),
                             const SizedBox(height: 16),
                             // Product Details
                             Column(
@@ -237,11 +281,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                   flex: 2,
                                                   child: ClipRRect(
                                                     borderRadius: BorderRadius.circular(8),
-                                                    child: Image.network(
-                                                      alternative.imageUrl,
-                                                      height: 150,
-                                                      fit: BoxFit.cover,
-                                                    ),
+                                                    // Use first image from alternative.imageUrls
+                                                    child: (alternative.imageUrls.isNotEmpty)
+                                                      ? Image.network(
+                                                          alternative.imageUrls[0], 
+                                                          height: 150,
+                                                          fit: BoxFit.cover,
+                                                          loadingBuilder: (context, child, loadingProgress) {
+                                                            if (loadingProgress == null) return child;
+                                                            return const Center(child: CircularProgressIndicator());
+                                                          },
+                                                          errorBuilder: (context, error, stackTrace) {
+                                                            return const Center(child: Icon(Icons.error, size: 50, color: Colors.grey));
+                                                          },
+                                                        )
+                                                      : Container( // Placeholder if no images
+                                                          height: 150,
+                                                          color: Colors.grey[200],
+                                                          child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                                                        ),
                                                   ),
                                                 ),
                                                 const SizedBox(width: 16),

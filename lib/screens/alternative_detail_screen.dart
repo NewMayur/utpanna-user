@@ -20,6 +20,10 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
   bool _isLoading = true;
   String _errorMessage = '';
 
+  // State for PageView
+  final PageController _pageController = PageController();
+  int _currentImageIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -105,36 +109,73 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            // Replicate image layout from ProductDetailScreen
-                            Center(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: MediaQuery.of(context).size.height * 0.3,
+                            // Alternative Image PageView
+                            if (alternative!.imageUrls.isNotEmpty)
+                              Container(
+                                height: MediaQuery.of(context).size.height * 0.35, // Match ProductDetailScreen height
+                                child: Stack(
+                                  alignment: Alignment.bottomCenter,
+                                  children: [
+                                    PageView.builder(
+                                      controller: _pageController,
+                                      itemCount: alternative!.imageUrls.length,
+                                      onPageChanged: (index) {
+                                        setState(() {
+                                          _currentImageIndex = index;
+                                        });
+                                      },
+                                      itemBuilder: (context, index) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(10),
+                                            child: Image.network(
+                                              alternative!.imageUrls[index], // Use list item
+                                              fit: BoxFit.cover,
+                                              loadingBuilder: (context, child, loadingProgress) {
+                                                if (loadingProgress == null) return child;
+                                                return const Center(child: CircularProgressIndicator());
+                                              },
+                                              errorBuilder: (context, error, stackTrace) {
+                                                return const Center(child: Icon(Icons.error, size: 50, color: Colors.grey));
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    // Page Indicators
+                                    Positioned(
+                                      bottom: 10.0,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: List.generate(alternative!.imageUrls.length, (index) {
+                                          return Container(
+                                            width: 8.0,
+                                            height: 8.0,
+                                            margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: _currentImageIndex == index
+                                                  ? Theme.of(context).primaryColor // Use theme color
+                                                  : Colors.grey.withOpacity(0.6),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: ClipRRect(
+                              )
+                            else // Placeholder if no images
+                              Container(
+                                height: MediaQuery.of(context).size.height * 0.3,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    alternative!.imageUrl,
-                                    fit: BoxFit.cover, // Keep fit: BoxFit.cover
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                // Match icon size from ProductDetailScreen (was 200)
-                                return const Icon(Icons.error, size: 200); 
-                              },
-                            ), // Closes Image.network
-                           ), // Closes ClipRRect
-                          ), // Closes ConstrainedBox
-                         ), // Closes Center
+                                ),
+                                child: const Center(child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey)),
+                              ),
                             const SizedBox(height: 16),
                             _buildDetailRow('Price', '₹${alternative!.price}'),
                             _buildDetailRow('Savings', '₹${alternative!.savings}'),

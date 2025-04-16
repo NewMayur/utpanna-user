@@ -2,7 +2,7 @@ class Alternative {
   final int id;
   final int productId;
   final String title;
-  final String imageUrl;
+  final List<String> imageUrls; // Changed from String to List<String>
   final double price; // Changed to double
   final double savings; // Changed to double
   final String chemicalComposition;
@@ -15,7 +15,7 @@ class Alternative {
     required this.id,
     required this.productId,
     required this.title,
-    required this.imageUrl,
+    required this.imageUrls, // Updated field name
     required this.price, // Changed to double
     required this.savings, // Changed to double
     required this.chemicalComposition,
@@ -30,7 +30,10 @@ class Alternative {
       id: _parseToInt(json['id']),
       productId: _parseToInt(json['product_id']),
       title: (json['title'] ?? '').toString(),
-      imageUrl: (json['image_url'] ?? '').toString(),
+      // Parse image_urls list
+      imageUrls: json['image_urls'] is List
+          ? List<String>.from(json['image_urls'].map((e) => e.toString()))
+          : [], // Default to empty list if not a list
       price: _parseDouble(json['price']), // Use _parseDouble
       savings: _parseDouble(json['savings']), // Use _parseDouble
       chemicalComposition: (json['chemical_composition'] ?? '').toString(),

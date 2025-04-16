@@ -25,25 +25,37 @@ class ProductCard extends StatelessWidget {
                   flex: 2,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      product.imageUrl,
-                      height: 150,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
+                    // Use the first image URL, provide placeholder if list is empty
+                    child: (product.imageUrls.isNotEmpty)
+                        ? Image.network(
+                            product.imageUrls[0], // Get the first image
+                            height: 150,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.error, size: 150);
+                            },
+                          )
+                        : Container(
+                            // Placeholder if no images
+                            height: 150,
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
                           ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.error, size: 150);
-                      },
-                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -56,7 +68,7 @@ class ProductCard extends StatelessWidget {
                       Text(
                         product.title,
                         style: const TextStyle(
-                          fontSize: 18, 
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
@@ -73,13 +85,15 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Savings: ₹${product.savings}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
+                      // Display savings only if it's greater than 0 or not null
+                      if (product.savings != null && product.savings! > 0)
+                        Text(
+                          'Savings: ₹${product.savings}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () {

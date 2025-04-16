@@ -3,22 +3,23 @@ import 'alternative.dart'; // Import the corrected Alternative model
 class Product {
   final int id;
   final String title;
-  final String imageUrl;
-  final double mrp; // Changed to double based on API response example (100.5)
+  final List<String> imageUrls;
+  final double mrp;
   final String broadCategory;
   final List<String> crops;
-  final double? savings; // Changed to double? based on API response example (10.5)
-  final String? openUrl; // Made nullable as it might not always be present
+  final double? savings;
+  final String? openUrl;
   final String? activeIngredient;
   final String? chemicalComposition;
   final String? modeOfAction;
   final String? usageDirection;
-  final List<Alternative>? alternatives; // Changed to use Alternative model
+  final List<Alternative>? alternatives;
 
-  Product({
+  // Added const constructor for immutability
+  const Product({
     required this.id,
     required this.title,
-    required this.imageUrl,
+    required this.imageUrls,
     required this.mrp,
     required this.broadCategory,
     required this.crops,
@@ -28,29 +29,43 @@ class Product {
     this.chemicalComposition,
     this.modeOfAction,
     this.usageDirection,
-    this.alternatives, // Changed to use Alternative model
+    this.alternatives,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    // Parse alternatives using the imported Alternative model
+    // Parse alternatives with additional type checking
     List<Alternative>? parsedAlternatives;
     if (json['alternatives'] is List) {
-      parsedAlternatives = (json['alternatives'] as List)
-          .map((altJson) => Alternative.fromJson(altJson)) // Use Alternative.fromJson
-          .toList();
+      try {
+        parsedAlternatives = (json['alternatives'] as List)
+            .where((altJson) => altJson is Map<String, dynamic>) // Ensure each item is a valid map
+            .map((altJson) => Alternative.fromJson(altJson as Map<String, dynamic>))
+            .toList();
+      } catch (e) {
+        // Log error for debugging (replace with your preferred logging mechanism)
+        print('Error parsing alternatives: $e');
+      }
     }
 
     return Product(
       id: _parseToInt(json['id']),
       title: json['title']?.toString() ?? 'No Title',
-      imageUrl: json['image_url']?.toString() ?? '',
+      imageUrls: json['image_urls'] is List
+          ? (json['image_urls'] as List)
+              .where((e) => e != null) // Filter out null values
+              .map((e) => e.toString())
+              .toList()
+          : [],
       mrp: _parseDouble(json['mrp']),
       broadCategory: json['broad_category']?.toString() ?? 'N/A',
       crops: json['crops'] is List
-          ? List<String>.from(json['crops'].map((e) => e.toString()))
+          ? (json['crops'] as List)
+              .where((e) => e != null)
+              .map((e) => e.toString())
+              .toList()
           : [],
       savings: _parseDoubleOptional(json['savings']),
-      openUrl: json['open_url']?.toString(), // Keep as nullable string
+      openUrl: json['open_url']?.toString(),
       activeIngredient: json['active_ingredient']?.toString(),
       chemicalComposition: json['chemical_composition']?.toString(),
       modeOfAction: json['mode_of_action']?.toString(),
@@ -64,7 +79,15 @@ class Product {
     if (value == null) return 0;
     if (value is int) return value;
     if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      if (parsed == null) {
+        print('Invalid int value: $value'); // Log for debugging
+        return 0;
+      }
+      return parsed;
+    }
+    print('Unsupported int type: $value'); // Log for debugging
     return 0;
   }
 
@@ -73,18 +96,31 @@ class Product {
     if (value == null) return 0.0;
     if (value is double) return value;
     if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0.0;
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed == null) {
+        print('Invalid double value: $value'); // Log for debugging
+        return 0.0;
+      }
+      return parsed;
+    }
+    print('Unsupported double type: $value'); // Log for debugging
     return 0.0;
   }
 
-   // Helper method to safely convert to nullable double
+  // Helper method to safely convert to nullable double
   static double? _parseDoubleOptional(dynamic value) {
     if (value == null) return null;
     if (value is double) return value;
     if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value);
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed == null) {
+        print('Invalid optional double value: $value'); // Log for debugging
+      }
+      return parsed;
+    }
+    print('Unsupported optional double type: $value'); // Log for debugging
     return null;
   }
 }
-
-// Removed the redundant AlternativeProduct class
