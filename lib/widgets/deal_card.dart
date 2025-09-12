@@ -14,7 +14,7 @@ class DealCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DealDetailScreen(dealId: deal.id),
+            builder: (context) => DealDetailScreen(deal: deal),
           ),
         );
       },
@@ -35,19 +35,19 @@ class DealCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Price: \$${deal.price.toStringAsFixed(2)}'),
+                  Text('Price: \$${deal.deal_price.toStringAsFixed(2)}'),
                   Text('Status: ${deal.status}'),
                 ],
               ),
               SizedBox(height: 8),
               LinearProgressIndicator(
-                value: deal.currentParticipants / deal.minParticipants,
+                value: deal.current_participants / deal.min_participants,
                 backgroundColor: Colors.grey[300],
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
               SizedBox(height: 4),
               Text(
-                '${deal.currentParticipants}/${deal.minParticipants} participants',
+                '${deal.current_participants}/${deal.min_participants} participants',
                 style: TextStyle(fontSize: 12),
               ),
             ],

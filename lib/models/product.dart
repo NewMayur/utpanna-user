@@ -1,7 +1,7 @@
 import 'alternative.dart'; // Import the corrected Alternative model
 
 class Product {
-  final int id;
+  final String id;
   final String title;
   final List<String> imageUrls;
   final double mrp;
@@ -48,7 +48,7 @@ class Product {
     }
 
     return Product(
-      id: _parseToInt(json['id']),
+      id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? 'No Title',
       imageUrls: json['image_urls'] is List
           ? (json['image_urls'] as List)
@@ -74,22 +74,7 @@ class Product {
     );
   }
 
-  // Helper method to safely convert to int
-  static int _parseToInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) {
-      final parsed = int.tryParse(value);
-      if (parsed == null) {
-        print('Invalid int value: $value'); // Log for debugging
-        return 0;
-      }
-      return parsed;
-    }
-    print('Unsupported int type: $value'); // Log for debugging
-    return 0;
-  }
+
 
   // Helper method to safely convert to double
   static double _parseDouble(dynamic value) {

@@ -98,7 +98,7 @@ class AuthService {
     }
   }
 
-  Future<bool> participateInDeal(int dealId, String idToken) async {
+  Future<bool> participateInDeal(String dealId, String idToken) async {
     final response = await http.post(
       Uri.parse('${Constants.apiUrl}/deals/$dealId/participate'),
       headers: {

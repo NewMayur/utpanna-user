@@ -9,7 +9,7 @@ import 'package:utpanna/screens/alternative_detail_screen.dart';
 import 'package:utpanna/utils/constants.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  final int productId;
+  final String productId;
 
   const ProductDetailScreen({Key? key, required this.productId}) : super(key: key);
 

@@ -7,7 +7,7 @@ import 'package:utpanna/models/alternative.dart';
 import 'package:utpanna/utils/constants.dart';
 
 class AlternativeDetailScreen extends StatefulWidget {
-  final int alternativeId;
+  final String alternativeId;
 
   const AlternativeDetailScreen({Key? key, required this.alternativeId}) : super(key: key);
 

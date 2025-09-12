@@ -1,6 +1,6 @@
 class Alternative {
-  final int id;
-  final int productId;
+  final String id;
+  final String productId;
   final String title;
   final List<String> imageUrls; // Changed from String to List<String>
   final double price; // Changed to double
@@ -27,8 +27,8 @@ class Alternative {
 
   factory Alternative.fromJson(Map<String, dynamic> json) {
     return Alternative(
-      id: _parseToInt(json['id']),
-      productId: _parseToInt(json['product_id']),
+      id: json['id']?.toString() ?? '',
+      productId: json['product_id']?.toString() ?? '',
       title: (json['title'] ?? '').toString(),
       // Parse image_urls list
       imageUrls: json['image_urls'] is List
@@ -46,14 +46,7 @@ class Alternative {
     );
   }
 
-  // Helper method to safely convert to int
-  static int _parseToInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
-  }
+
 
   // Helper method to safely convert to double (copied from product.dart)
   static double _parseDouble(dynamic value) {
