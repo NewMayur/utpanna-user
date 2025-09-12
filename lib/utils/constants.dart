@@ -5,7 +5,7 @@ class Constants {
   
   //dev
   // static const String apiUrl = 'http://16.16.209.148:8000';
-  static const String apiUrl = 'https://utpanna-dev.serveftp.com';
+  static const String apiUrl = 'https://dev-utpanna.serveftp.com';
 
   // stag
   // static const String apiUrl = 'https://utpanna-backend-stag-466091422192.asia-south1.run.app';
