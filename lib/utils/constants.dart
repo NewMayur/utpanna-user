@@ -1,12 +1,11 @@
 class Constants {
   // Base URL for your API
   // static const String apiUrl = 'http://127.0.0.1:8000';
-  static const String apiUrl = 'http://192.168.1.10:8000';
+  // static const String apiUrl = 'http://192.168.1.10:8000';
 
   
   //dev
-  // static const String apiUrl = 'http://16.16.209.148:8000';
-  // static const String apiUrl = 'https://dev-utpanna.serveftp.com';
+  static const String apiUrl = 'https://aepw4tezo9.execute-api.ap-south-1.amazonaws.com/dev';
 
   // stag
   // static const String apiUrl = 'https://utpanna-backend-stag-466091422192.asia-south1.run.app';
