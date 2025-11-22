@@ -9,7 +9,8 @@ class PhoneAuthScreen extends StatefulWidget {
 }
 
 class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
-  final TextEditingController _phoneController = TextEditingController(text: '+91 ');
+  final TextEditingController _phoneController =
+      TextEditingController(text: '+91 ');
   final TextEditingController _otpController = TextEditingController();
   final AuthService _authService = AuthService();
   String? _verificationId;
@@ -90,19 +91,20 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: _isLoading 
-                      ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    child: _isLoading
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'Verify',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
-                        )
-                      : Text(
-                          'Verify',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
                   ),
                 if (_codeSent) ...[
                   SizedBox(height: 24),
@@ -183,11 +185,13 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     }
 
     try {
-      UserCredential userCredential = await _authService.signInWithOTP(_verificationId!, _otpController.text);
+      UserCredential userCredential = await _authService.signInWithOTP(
+          _verificationId!, _otpController.text);
       if (userCredential.user != null) {
         _showSnackBar('Successfully signed in');
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => HomeScreen()), // Navigate to HomeScreen
+          MaterialPageRoute(
+              builder: (context) => HomeScreen()), // Navigate to HomeScreen
         );
       } else {
         _showSnackBar('Failed to sign in. Please try again.');

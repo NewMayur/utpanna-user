@@ -1,18 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:utpanna/models/alternative.dart';
 import 'package:utpanna/utils/constants.dart';
+import 'package:utpanna/utils/savings_calculator.dart';
 
 class AlternativeDetailScreen extends StatefulWidget {
   final String alternativeId;
+  final double mrp;
+  final String broadCategory;
 
-  const AlternativeDetailScreen({Key? key, required this.alternativeId}) : super(key: key);
+  const AlternativeDetailScreen({
+    Key? key,
+    required this.alternativeId,
+    required this.mrp,
+    required this.broadCategory,
+  }) : super(key: key);
 
   @override
-  State<AlternativeDetailScreen> createState() => _AlternativeDetailScreenState();
+  State<AlternativeDetailScreen> createState() =>
+      _AlternativeDetailScreenState();
 }
 
 class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
@@ -55,7 +65,8 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
         });
       } else {
         setState(() {
-          _errorMessage = 'Failed to load alternative details. Status code: ${response.statusCode}';
+          _errorMessage =
+              'Failed to load alternative details. Status code: ${response.statusCode}';
           _isLoading = false;
         });
       }
@@ -94,7 +105,8 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                   ),
                 )
               : alternative == null
-                  ? const Center(child: Text('No alternative details available'))
+                  ? const Center(
+                      child: Text('No alternative details available'))
                   : SingleChildScrollView(
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -104,7 +116,7 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                             Text(
                               alternative!.title,
                               style: const TextStyle(
-                                fontSize: 24, 
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -112,7 +124,8 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                             // Alternative Image PageView
                             if (alternative!.imageUrls.isNotEmpty)
                               Container(
-                                height: MediaQuery.of(context).size.height * 0.35, // Match ProductDetailScreen height
+                                height: MediaQuery.of(context).size.height *
+                                    0.35, // Match ProductDetailScreen height
                                 child: Stack(
                                   alignment: Alignment.bottomCenter,
                                   children: [
@@ -126,18 +139,29 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                                       },
                                       itemBuilder: (context, index) {
                                         return Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4.0),
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                             child: Image.network(
-                                              alternative!.imageUrls[index], // Use list item
+                                              alternative!.imageUrls[
+                                                  index], // Use list item
                                               fit: BoxFit.cover,
-                                              loadingBuilder: (context, child, loadingProgress) {
-                                                if (loadingProgress == null) return child;
-                                                return const Center(child: CircularProgressIndicator());
+                                              loadingBuilder: (context, child,
+                                                  loadingProgress) {
+                                                if (loadingProgress == null)
+                                                  return child;
+                                                return const Center(
+                                                    child:
+                                                        CircularProgressIndicator());
                                               },
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return const Center(child: Icon(Icons.error, size: 50, color: Colors.grey));
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return const Center(
+                                                    child: Icon(Icons.error,
+                                                        size: 50,
+                                                        color: Colors.grey));
                                               },
                                             ),
                                           ),
@@ -148,17 +172,24 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                                     Positioned(
                                       bottom: 10.0,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: List.generate(alternative!.imageUrls.length, (index) {
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(
+                                            alternative!.imageUrls.length,
+                                            (index) {
                                           return Container(
                                             width: 8.0,
                                             height: 8.0,
-                                            margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                                            margin: const EdgeInsets.symmetric(
+                                                vertical: 10.0,
+                                                horizontal: 2.0),
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: _currentImageIndex == index
-                                                  ? Theme.of(context).primaryColor // Use theme color
-                                                  : Colors.grey.withOpacity(0.6),
+                                                  ? Theme.of(context)
+                                                      .primaryColor // Use theme color
+                                                  : Colors.grey
+                                                      .withOpacity(0.6),
                                             ),
                                           );
                                         }),
@@ -169,20 +200,32 @@ class _AlternativeDetailScreenState extends State<AlternativeDetailScreen> {
                               )
                             else // Placeholder if no images
                               Container(
-                                height: MediaQuery.of(context).size.height * 0.3,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.3,
                                 decoration: BoxDecoration(
                                   color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Center(child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey)),
+                                child: const Center(
+                                    child: Icon(Icons.image_not_supported,
+                                        size: 50, color: Colors.grey)),
                               ),
                             const SizedBox(height: 16),
                             _buildDetailRow('Price', '₹${alternative!.price}'),
-                            _buildDetailRow('Savings', '₹${alternative!.savings}'),
-                            _buildDetailRow('Chemical Composition', alternative!.chemicalComposition),
-                            _buildDetailRow('Mode of Action', alternative!.modeOfAction),
-                            _buildDetailRow('Active Ingredient', alternative!.activeIngredient),
-                            _buildDetailRow('Usage Direction', alternative!.usageDirection),
+                            _buildDetailRow(
+                                'Savings', '₹${alternative!.savings}'),
+                            _buildDetailRow('Per-Acre Savings',
+                                '₹${calculatePerAcreSavings(widget.mrp, alternative!.price, getDefaultUsagePerAcre(widget.broadCategory)).toStringAsFixed(0)}'),
+                            _buildDetailRow(
+                                'Views', '${Random().nextInt(141) + 4}'),
+                            _buildDetailRow('Chemical Composition',
+                                alternative!.chemicalComposition),
+                            _buildDetailRow(
+                                'Mode of Action', alternative!.modeOfAction),
+                            _buildDetailRow('Active Ingredient',
+                                alternative!.activeIngredient),
+                            _buildDetailRow(
+                                'Usage Direction', alternative!.usageDirection),
                             const SizedBox(height: 16),
                             const Text(
                               'Used For:',

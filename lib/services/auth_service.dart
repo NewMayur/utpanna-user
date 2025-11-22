@@ -23,7 +23,8 @@ class AuthService {
   ) async {
     if (kIsWeb) {
       try {
-        ConfirmationResult confirmationResult = await _auth.signInWithPhoneNumber(phoneNumber);
+        ConfirmationResult confirmationResult =
+            await _auth.signInWithPhoneNumber(phoneNumber);
         onCodeSent(confirmationResult.verificationId);
       } catch (e) {
         onError(e.toString());
@@ -45,12 +46,14 @@ class AuthService {
     }
   }
 
-  Future<UserCredential> signInWithOTP(String verificationId, String smsCode) async {
+  Future<UserCredential> signInWithOTP(
+      String verificationId, String smsCode) async {
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
     );
-    UserCredential userCredential = await _auth.signInWithCredential(credential);
+    UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
     await _setSessionTimeout();
     return userCredential;
   }
@@ -68,7 +71,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     final expiryString = prefs.getString('sessionExpiry');
     if (expiryString == null) return false;
-    
+
     final expiry = DateTime.parse(expiryString);
     return DateTime.now().isBefore(expiry);
   }
@@ -79,7 +82,8 @@ class AuthService {
     await prefs.remove('sessionExpiry');
   }
 
-  Future<bool> updateUserDetails(String name, String address, String idToken) async {
+  Future<bool> updateUserDetails(
+      String name, String address, String idToken) async {
     try {
       final response = await http.post(
         Uri.parse('${Constants.apiUrl}/user/details'),

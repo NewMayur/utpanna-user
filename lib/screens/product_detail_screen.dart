@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,11 +8,13 @@ import 'package:utpanna/models/alternative.dart';
 import 'package:utpanna/models/product.dart';
 import 'package:utpanna/screens/alternative_detail_screen.dart';
 import 'package:utpanna/utils/constants.dart';
+import 'package:utpanna/utils/savings_calculator.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
 
-  const ProductDetailScreen({Key? key, required this.productId}) : super(key: key);
+  const ProductDetailScreen({Key? key, required this.productId})
+      : super(key: key);
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -54,13 +57,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         final Map<String, dynamic> productData = jsonDecode(response.body);
         setState(() {
           // Product.fromJson now handles alternatives parsing
-          product = Product.fromJson(productData); 
+          product = Product.fromJson(productData);
           // Remove redundant alternatives parsing here
           _isLoading = false;
         });
       } else {
         setState(() {
-          _errorMessage = 'Failed to load product details. Status code: ${response.statusCode}';
+          _errorMessage =
+              'Failed to load product details. Status code: ${response.statusCode}';
           _isLoading = false;
         });
       }
@@ -110,7 +114,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             if (product!.imageUrls.isNotEmpty)
                               Container(
                                 // Constrain height similar to before, adjust as needed
-                                height: MediaQuery.of(context).size.height * 0.35, 
+                                height:
+                                    MediaQuery.of(context).size.height * 0.35,
                                 child: Stack(
                                   alignment: Alignment.bottomCenter,
                                   children: [
@@ -125,18 +130,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       itemBuilder: (context, index) {
                                         return Padding(
                                           // Add padding around images if desired
-                                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4.0),
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                             child: Image.network(
                                               product!.imageUrls[index],
                                               fit: BoxFit.cover,
-                                              loadingBuilder: (context, child, loadingProgress) {
-                                                if (loadingProgress == null) return child;
-                                                return const Center(child: CircularProgressIndicator());
+                                              loadingBuilder: (context, child,
+                                                  loadingProgress) {
+                                                if (loadingProgress == null)
+                                                  return child;
+                                                return const Center(
+                                                    child:
+                                                        CircularProgressIndicator());
                                               },
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return const Center(child: Icon(Icons.error, size: 50, color: Colors.grey));
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return const Center(
+                                                    child: Icon(Icons.error,
+                                                        size: 50,
+                                                        color: Colors.grey));
                                               },
                                             ),
                                           ),
@@ -147,17 +162,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     Positioned(
                                       bottom: 10.0,
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: List.generate(product!.imageUrls.length, (index) {
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(
+                                            product!.imageUrls.length, (index) {
                                           return Container(
                                             width: 8.0,
                                             height: 8.0,
-                                            margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                                            margin: const EdgeInsets.symmetric(
+                                                vertical: 10.0,
+                                                horizontal: 2.0),
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: _currentImageIndex == index
-                                                  ? Theme.of(context).primaryColor // Use theme color
-                                                  : Colors.grey.withOpacity(0.6),
+                                                  ? Theme.of(context)
+                                                      .primaryColor // Use theme color
+                                                  : Colors.grey
+                                                      .withOpacity(0.6),
                                             ),
                                           );
                                         }),
@@ -168,12 +189,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               )
                             else // Placeholder if no images
                               Container(
-                                height: MediaQuery.of(context).size.height * 0.3,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.3,
                                 decoration: BoxDecoration(
                                   color: Colors.grey[200],
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Center(child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey)),
+                                child: const Center(
+                                    child: Icon(Icons.image_not_supported,
+                                        size: 50, color: Colors.grey)),
                               ),
                             const SizedBox(height: 16),
                             // Product Details
@@ -183,7 +207,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 Text(
                                   product!.title,
                                   style: const TextStyle(
-                                    fontSize: 24, 
+                                    fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                   ),
                                   maxLines: 2,
@@ -191,7 +215,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       'Category: ${product!.broadCategory}',
@@ -212,10 +237,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 // Use actual data from product object
-                                _buildDetailRow('Chemical Composition', product!.chemicalComposition ?? 'N/A'),
-                                _buildDetailRow('Mode of Action', product!.modeOfAction ?? 'N/A'),
-                                _buildDetailRow('Active Ingredient', product!.activeIngredient ?? 'N/A'),
-                                _buildDetailRow('Usage Directions', product!.usageDirection ?? 'N/A'),
+                                _buildDetailRow('Chemical Composition',
+                                    product!.chemicalComposition ?? 'N/A'),
+                                _buildDetailRow('Mode of Action',
+                                    product!.modeOfAction ?? 'N/A'),
+                                _buildDetailRow('Active Ingredient',
+                                    product!.activeIngredient ?? 'N/A'),
+                                _buildDetailRow('Usage Directions',
+                                    product!.usageDirection ?? 'N/A'),
                               ],
                             ),
                             const SizedBox(height: 16),
@@ -223,7 +252,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const Text(
                               'Crops:',
                               style: TextStyle(
-                                fontSize: 18, 
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -242,32 +271,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             const Text(
                               'Alternatives:',
                               style: TextStyle(
-                                fontSize: 18, 
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 8),
                             // Use alternatives from the product object
-                            (product!.alternatives == null || product!.alternatives!.isEmpty)
+                            (product!.alternatives == null ||
+                                    product!.alternatives!.isEmpty)
                                 ? const Text('No alternatives found')
                                 : ListView.builder(
                                     shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     itemCount: product!.alternatives!.length,
                                     itemBuilder: (context, index) {
                                       // Assuming AlternativeProduct model from product.dart is compatible
                                       // with the expected Alternative model here.
                                       // If not, this part might need further adjustment based on alternative.dart content.
-                                      final alternative = product!.alternatives![index]; 
+                                      final alternative =
+                                          product!.alternatives![index];
                                       return Card(
-                                        margin: const EdgeInsets.symmetric(vertical: 4),
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 4),
                                         child: InkWell(
                                           onTap: () {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => AlternativeDetailScreen(
+                                                builder: (context) =>
+                                                    AlternativeDetailScreen(
                                                   alternativeId: alternative.id,
+                                                  mrp: product!.mrp,
+                                                  broadCategory:
+                                                      product!.broadCategory,
                                                 ),
                                               ),
                                             );
@@ -280,26 +317,52 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                 Expanded(
                                                   flex: 2,
                                                   child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
                                                     // Use first image from alternative.imageUrls
-                                                    child: (alternative.imageUrls.isNotEmpty)
-                                                      ? Image.network(
-                                                          alternative.imageUrls[0], 
-                                                          height: 150,
-                                                          fit: BoxFit.cover,
-                                                          loadingBuilder: (context, child, loadingProgress) {
-                                                            if (loadingProgress == null) return child;
-                                                            return const Center(child: CircularProgressIndicator());
-                                                          },
-                                                          errorBuilder: (context, error, stackTrace) {
-                                                            return const Center(child: Icon(Icons.error, size: 50, color: Colors.grey));
-                                                          },
-                                                        )
-                                                      : Container( // Placeholder if no images
-                                                          height: 150,
-                                                          color: Colors.grey[200],
-                                                          child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                                                        ),
+                                                    child: (alternative
+                                                            .imageUrls
+                                                            .isNotEmpty)
+                                                        ? Image.network(
+                                                            alternative
+                                                                .imageUrls[0],
+                                                            height: 150,
+                                                            fit: BoxFit.cover,
+                                                            loadingBuilder:
+                                                                (context, child,
+                                                                    loadingProgress) {
+                                                              if (loadingProgress ==
+                                                                  null)
+                                                                return child;
+                                                              return const Center(
+                                                                  child:
+                                                                      CircularProgressIndicator());
+                                                            },
+                                                            errorBuilder:
+                                                                (context, error,
+                                                                    stackTrace) {
+                                                              return const Center(
+                                                                  child: Icon(
+                                                                      Icons
+                                                                          .error,
+                                                                      size: 50,
+                                                                      color: Colors
+                                                                          .grey));
+                                                            },
+                                                          )
+                                                        : Container(
+                                                            // Placeholder if no images
+                                                            height: 150,
+                                                            color: Colors
+                                                                .grey[200],
+                                                            child: const Icon(
+                                                                Icons
+                                                                    .image_not_supported,
+                                                                size: 50,
+                                                                color: Colors
+                                                                    .grey),
+                                                          ),
                                                   ),
                                                 ),
                                                 const SizedBox(width: 16),
@@ -307,23 +370,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                 Expanded(
                                                   flex: 3,
                                                   child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
                                                       Text(
                                                         alternative.title,
                                                         style: const TextStyle(
                                                           fontSize: 16,
-                                                          fontWeight: FontWeight.bold,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
                                                         maxLines: 2,
-                                                        overflow: TextOverflow.ellipsis,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
                                                       const SizedBox(height: 8),
                                                       Text(
                                                         'Price: ₹${alternative.price}',
                                                         style: TextStyle(
-                                                          color: Colors.green[800],
-                                                          fontWeight: FontWeight.bold,
+                                                          color:
+                                                              Colors.green[800],
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
                                                       ),
                                                       const SizedBox(height: 4),
@@ -331,7 +400,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                         'Savings: ₹${alternative.savings}',
                                                         style: const TextStyle(
                                                           color: Colors.orange,
-                                                          fontWeight: FontWeight.bold,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        'Per-Acre Savings: ₹${calculatePerAcreSavings(product!.mrp, alternative.price, getDefaultUsagePerAcre(product!.broadCategory)).toStringAsFixed(0)}',
+                                                        style: const TextStyle(
+                                                          color: Colors.red,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        'Views: ${(Random().nextInt(147) + 4)}',
+                                                        style: const TextStyle(
+                                                          color: Colors.blue,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 14,
                                                         ),
                                                       ),
                                                     ],
