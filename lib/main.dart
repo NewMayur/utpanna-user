@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:utpanna/screens/home_screen.dart';
 import 'screens/deals_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -6,6 +7,11 @@ import 'screens/phone_auth_screen.dart';
 import 'services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'widgets/progress.dart';
+import 'screens/crop_selection_screen.dart';
+import 'screens/objective_selection_screen.dart';
+import 'screens/combo_recommendation_screen.dart';
+
+import 'providers/combo_provider.dart';
 
 //dev
 void main() async {
@@ -42,17 +48,25 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Utpanna',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return ChangeNotifierProvider(
+      create: (context) => ComboBuilderProvider(),
+      child: MaterialApp(
+        title: 'Utpanna',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: AuthWrapper(),
+        routes: {
+          '/home': (context) => const HomeScreen(),
+          '/deals': (context) => const DealsScreen(),
+          '/combo/select-crop': (context) => const CropSelectionScreen(),
+          '/combo/select-objective': (context) =>
+              const ObjectiveSelectionScreen(),
+          '/combo/recommendations': (context) =>
+              const ComboRecommendationScreen(),
+        },
       ),
-      home: AuthWrapper(),
-      routes: {
-        '/home': (context) => const HomeScreen(),
-        '/deals': (context) => const DealsScreen(),
-      },
     );
   }
 }

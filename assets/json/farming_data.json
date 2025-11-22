@@ -1,0 +1,120 @@
+{
+  "crops": [
+    {
+      "id": "c_cotton",
+      "name": "Cotton",
+      "image_asset": "assets/crops/cotton.png"
+    },
+    {
+      "id": "c_soybean",
+      "name": "Soybean",
+      "image_asset": "assets/crops/soybean.png"
+    },
+    {
+      "id": "c_chana",
+      "name": "Chana",
+      "image_asset": "assets/crops/chana.png"
+    },
+    {
+      "id": "c_turmeric",
+      "name": "Turmeric",
+      "image_asset": "assets/crops/turmeric.png"
+    }
+  ],
+  "objectives": [
+    { "id": "obj_growth", "name": "Vegetative Growth" },
+    { "id": "obj_flower", "name": "Flowering Stage" },
+    { "id": "obj_fruit", "name": "Fruiting Stage" },
+    { "id": "obj_pest", "name": "Pest Control" }
+  ],
+  "products": [
+    {
+      "id": "p_nitro",
+      "name": "NitroBoost Fertilizer",
+      "category": "Fertilizers",
+      "price": 500,
+      "unit": "1 L",
+      "active_deal_uuid": "uuid-prod-nitro-001"
+    },
+    {
+      "id": "p_pestx",
+      "name": "PestX Insecticide",
+      "category": "Insecticides",
+      "price": 850,
+      "unit": "500 ml",
+      "active_deal_uuid": null
+    },
+    {
+      "id": "p_fungi",
+      "name": "FungiKill",
+      "category": "Fungicide",
+      "price": 300,
+      "unit": "250 g",
+      "active_deal_uuid": null
+    },
+    {
+      "id": "p_groth",
+      "name": "GrowthMax Fertilizer",
+      "category": "Fertilizers",
+      "price": 650,
+      "unit": "1 kg",
+      "active_deal_uuid": null
+    },
+    {
+      "id": "p_bloom",
+      "name": "BloomPlus Fertilizer",
+      "category": "Fertilizers",
+      "price": 450,
+      "unit": "500 g",
+      "active_deal_uuid": null
+    },
+    {
+      "id": "p_fruit",
+      "name": "FruitGuard Pesticide",
+      "category": "Pesticides",
+      "price": 750,
+      "unit": "1 L",
+      "active_deal_uuid": null
+    }
+  ],
+  "recommendations": [
+    {
+      "crop_id": "c_cotton",
+      "objective_id": "obj_growth",
+      "deal_uuid": "DEAL-COTTON-GROWTH-2024",
+      "combo_title": "Cotton Growth Special",
+      "items": [
+        { "product_id": "p_nitro", "qty_acre": 1.0, "qty_pump": 0.1 },
+        { "product_id": "p_pestx", "qty_acre": 0.5, "qty_pump": 0.05 }
+      ]
+    },
+    {
+      "crop_id": "c_soybean",
+      "objective_id": "obj_growth",
+      "deal_uuid": "DEAL-SOYBEAN-GROWTH-2024",
+      "combo_title": "Soybean Growth Package",
+      "items": [
+        { "product_id": "p_groth", "qty_acre": 1.5, "qty_pump": 0.15 },
+        { "product_id": "p_pestx", "qty_acre": 0.3, "qty_pump": 0.03 }
+      ]
+    },
+    {
+      "crop_id": "c_chana",
+      "objective_id": "obj_growth",
+      "deal_uuid": "DEAL-CHANA-GROWTH-2024",
+      "combo_title": "Chana Growth Combo",
+      "items": [{ "product_id": "p_nitro", "qty_acre": 0.8, "qty_pump": 0.08 }]
+    },
+    {
+      "crop_id": "c_turmeric",
+      "objective_id": "obj_pest",
+      "deal_uuid": "DEAL-TURMERIC-PEST-2024",
+      "combo_title": "Turmeric Pest Control",
+      "status": "active",
+      "items": [
+        { "product_id": "p_fungi", "qty_acre": 0.5, "qty_pump": 0.05 },
+        { "product_id": "p_pestx", "qty_acre": 0.7, "qty_pump": 0.07 }
+      ]
+    }
+  ]
+}
