@@ -1,141 +1,244 @@
 import 'package:flutter/material.dart';
-import 'package:utpanna/models/product.dart';
-import 'package:utpanna/screens/product_detail_screen.dart';
+import '../models/farming_models.dart';
 
+// Existing ProductCard for API Product model - unchanged
 class ProductCard extends StatelessWidget {
-  final Product product;
+  final dynamic product; // Can be Product or FarmingProduct
+  final VoidCallback? onTap;
 
-  const ProductCard({Key? key, required this.product}) : super(key: key);
+  const ProductCard({
+    Key? key,
+    required this.product,
+    this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.all(8),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailScreen(productId: product.id),
+    // Handle API Product model (from product.dart)
+    if (product is! FarmingProduct) {
+      return GestureDetector(
+        onTap: onTap,
+        child: Card(
+          elevation: 3,
+          margin: const EdgeInsets.all(8),
+          child: Container(
+            width: 160,
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 100,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child:
+                      const Icon(Icons.inventory, size: 50, color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  product.name ?? 'Product',
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Image (2/5 width)
-                  Expanded(
-                    flex: 2,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      // Use the first image URL, provide placeholder if list is empty
-                      child: (product.imageUrls.isNotEmpty)
-                          ? Image.network(
-                              product.imageUrls[0], // Get the first image
-                              height: 150,
+          ),
+        ),
+      );
+    }
+
+    // Handle FarmingProduct model - new vertical card design
+    final farmingProduct = product as FarmingProduct;
+
+    return VerticalProductCard(
+      product: farmingProduct,
+      onTap: onTap,
+    );
+  }
+}
+
+// New VerticalProductCard for farming products
+class VerticalProductCard extends StatelessWidget {
+  final FarmingProduct product;
+  final VoidCallback? onTap;
+
+  const VerticalProductCard({
+    Key? key,
+    required this.product,
+    this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 3,
+        margin: const EdgeInsets.all(8),
+        child: IntrinsicHeight(
+          // Allow height to fit content
+          child: Container(
+            width: 180, // Slightly wider to accommodate content
+            constraints:
+                const BoxConstraints(maxWidth: 200), // Max width constraint
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Fit to content height
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product Image with Discount Badge - Flexible height
+                Flexible(
+                  child: Stack(
+                    children: [
+                      // Product Image
+                      AspectRatio(
+                        // Use aspect ratio for consistent scaling
+                        aspectRatio: 1.0, // Square aspect ratio
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            image: DecorationImage(
+                              image: product.imageUrl != null &&
+                                      product.imageUrl!.isNotEmpty
+                                  ? NetworkImage(product.imageUrl!)
+                                  : const NetworkImage(
+                                      'https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp'),
                               fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress
-                                                .cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.error, size: 150);
-                              },
-                            )
-                          : Container(
-                              // Placeholder if no images
-                              height: 150,
-                              color: Colors.grey[200],
-                              child: const Icon(
-                                Icons.image_not_supported,
-                                size: 50,
-                                color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Discount Badge
+                      if (product.discountPercent > 0)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 1), // Smaller padding
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${product.discountPercent.toInt()}%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9, // Smaller font
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Details (3/5 width)
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
                           ),
-                          maxLines: 2,
+                        ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Product Name - Flexible with wrapping
+                Flexible(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SizedBox(
+                        width: constraints.maxWidth,
+                        child: Text(
+                          product.name,
+                          style: const TextStyle(
+                            fontSize: 13, // Slightly smaller font
+                            fontWeight: FontWeight.w600,
+                            height: 1.2, // Line height for better readability
+                          ),
+                          softWrap: true, // Allow wrapping
+                          maxLines: 3, // Allow up to 3 lines
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Price: ₹${product.mrp}',
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                // Pricing Row - Compact layout
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // MRP (strikethrough)
+                      Text(
+                        '₹${product.mrp.toInt()}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.red,
+                          decoration: TextDecoration.lineThrough,
+                          decorationThickness: 1.5,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      // Selling Price (bold green)
+                      Text(
+                        '₹${product.price.toInt()}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                // Unit and Deal Badge Row - Compact
+                Row(
+                  children: [
+                    // Unit
+                    Expanded(
+                      child: Text(
+                        'per ${product.unit}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+
+                    // Deal Badge
+                    if (product.activeDealUuid != null)
+                      Container(
+                        margin: const EdgeInsets.only(left: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1), // Smaller padding
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius:
+                              BorderRadius.circular(6), // Smaller radius
+                        ),
+                        child: const Text(
+                          'DEAL',
                           style: TextStyle(
-                            color: Colors.green[800],
-                            fontSize: 16,
+                            color: Colors.white,
+                            fontSize: 8, // Smaller font
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        // Display savings only if it's greater than 0 or not null
-                        if (product.savings != null && product.savings! > 0)
-                          Text(
-                            'Savings: ₹${product.savings}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                            ),
-                          ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Second Row: Category and Crops
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    product.broadCategory,
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 16,
-                    ),
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    children: product.crops
-                        .map((crop) => Chip(
-                              label: Text(crop),
-                              backgroundColor: Colors.green[100],
-                              labelStyle: const TextStyle(fontSize: 12),
-                            ))
-                        .toList(),
-                  ),
-                ],
-              ),
-            ],
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

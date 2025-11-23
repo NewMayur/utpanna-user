@@ -40,7 +40,9 @@ class FarmingProduct {
   final String name;
   final String category;
   final double price;
+  final double mrp;
   final String unit;
+  final String? imageUrl;
   final String? activeDealUuid;
 
   FarmingProduct({
@@ -48,7 +50,9 @@ class FarmingProduct {
     required this.name,
     required this.category,
     required this.price,
+    required this.mrp,
     required this.unit,
+    this.imageUrl,
     this.activeDealUuid,
   });
 
@@ -58,9 +62,18 @@ class FarmingProduct {
       name: json['name'] ?? '',
       category: json['category'] ?? '',
       price: (json['price'] ?? 0).toDouble(),
+      mrp: (json['mrp'] ?? json['price'] ?? 0)
+          .toDouble(), // Use price as MRP if MRP not available
       unit: json['unit'] ?? '',
+      imageUrl: json['image_url'],
       activeDealUuid: json['active_deal_uuid'],
     );
+  }
+
+  // Calculate discount percentage
+  double get discountPercent {
+    if (mrp <= 0) return 0;
+    return ((mrp - price) / mrp * 100).roundToDouble();
   }
 }
 

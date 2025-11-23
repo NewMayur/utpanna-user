@@ -33,7 +33,9 @@
       "name": "NitroBoost Fertilizer",
       "category": "Fertilizers",
       "price": 500,
+      "mrp": 650,
       "unit": "1 L",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
       "active_deal_uuid": "uuid-prod-nitro-001"
     },
     {
@@ -41,7 +43,9 @@
       "name": "PestX Insecticide",
       "category": "Insecticides",
       "price": 850,
+      "mrp": 1050,
       "unit": "500 ml",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
       "active_deal_uuid": null
     },
     {
@@ -49,7 +53,9 @@
       "name": "FungiKill",
       "category": "Fungicide",
       "price": 300,
+      "mrp": 400,
       "unit": "250 g",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
       "active_deal_uuid": null
     },
     {
@@ -57,7 +63,9 @@
       "name": "GrowthMax Fertilizer",
       "category": "Fertilizers",
       "price": 650,
+      "mrp": 800,
       "unit": "1 kg",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
       "active_deal_uuid": null
     },
     {
@@ -65,7 +73,9 @@
       "name": "BloomPlus Fertilizer",
       "category": "Fertilizers",
       "price": 450,
+      "mrp": 550,
       "unit": "500 g",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
       "active_deal_uuid": null
     },
     {
@@ -73,7 +83,9 @@
       "name": "FruitGuard Pesticide",
       "category": "Pesticides",
       "price": 750,
+      "mrp": 900,
       "unit": "1 L",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
       "active_deal_uuid": null
     }
   ],

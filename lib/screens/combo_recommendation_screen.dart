@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/farming_models.dart';
 import '../providers/combo_provider.dart';
 import '../screens/customize_combo_screen.dart';
 import '../services/auth_service.dart';
 import '../utils/constants.dart';
+import '../widgets/product_card.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -19,6 +21,21 @@ class ComboRecommendationScreen extends StatefulWidget {
 class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
   final AuthService _authService = AuthService();
   final Color accentColor = const Color(0xFF44aa00);
+  bool _comboAccordionExpanded = false; // Add this for combo accordion state
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with recommended products when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final provider =
+            Provider.of<ComboBuilderProvider>(context, listen: false);
+        // Initialize the included products and quantities with recommended values
+        provider.resetToRecommended();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,16 +79,8 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category accordions
-                  ...groupedProducts.entries.map((entry) {
-                    final category = entry.key;
-                    final products = entry.value;
-
-                    return CategoryAccordion(
-                      category: category,
-                      products: products,
-                    );
-                  }).toList(),
+                  // Category product accordions
+                  ..._buildCategoryProductAccordions(provider),
 
                   const SizedBox(height: 24),
                 ],
@@ -79,7 +88,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
             ),
           ),
 
-          // Combo section at bottom
+          // Combo section at bottom - Accordion Style
           Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -95,64 +104,53 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '🎯 Recommended Combo',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  recommendation.comboTitle,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Combo items summary
-                ...recommendation.items.map((item) {
-                  final product = provider.getProductById(item.productId);
-                  if (product == null) return const SizedBox.shrink();
-
-                  final qty = provider.isByAcre ? item.qtyAcre : item.qtyPump;
-                  final itemTotal = qty * product.price;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            product.name,
-                            style: const TextStyle(fontSize: 14),
+                // Combo Header - Always Visible - Clean Structure
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '🎯 Recommended Combo',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${qty.toStringAsFixed(1)} ${product.unit}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
+                          const SizedBox(height: 4),
+                          Text(
+                            recommendation.comboTitle,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '₹${itemTotal.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  );
-                }).toList(),
+                    // Expand/collapse icon on the right
+                    IconButton(
+                      onPressed: () => setState(() {
+                        _comboAccordionExpanded = !_comboAccordionExpanded;
+                      }),
+                      icon: Icon(
+                        _comboAccordionExpanded
+                            ? Icons.expand_less
+                            : Icons.expand_more,
+                        size: 24,
+                        color: accentColor,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                // Total cost
+                // Always visible: Price and Toggle
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -174,11 +172,9 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                const SizedBox(height: 16),
-
-                // Pricing toggle
+                // Pricing toggle - Always visible
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -208,48 +204,174 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                // Collapsible Content
+                if (_comboAccordionExpanded) ...[
+                  const SizedBox(height: 16),
 
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () {
-                          provider.initializeCustomQuantities();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const CustomizeComboScreen(),
+                  // Image collage of combo products
+                  _buildComboImageCollage(provider, recommendation),
+
+                  const SizedBox(height: 16),
+
+                  // Combo items with quantity inputs
+                  const Text(
+                    'Adjust Quantities (varies by land size):',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  ...recommendation.items.map((item) {
+                    final product = provider.getProductById(item.productId);
+                    if (product == null) return const SizedBox.shrink();
+
+                    final quantityText =
+                        provider.customQuantities[product.id]?.toString() ??
+                            item.qtyAcre.toString();
+                    final quantity =
+                        double.tryParse(quantityText) ?? item.qtyAcre;
+                    final itemTotal = quantity * product.price;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  product.name,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '₹${itemTotal.toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF44aa00),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Text(
+                                'Quantity: ',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Expanded(
+                                child: SizedBox(
+                                  width: 100,
+                                  height: 40,
+                                  child: TextFormField(
+                                    initialValue: quantityText,
+                                    textAlign: TextAlign.center,
+                                    decoration: InputDecoration(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 4),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFF44aa00)),
+                                      ),
+                                      hintText: '0.0',
+                                    ),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    style: const TextStyle(fontSize: 14),
+                                    onChanged: (value) {
+                                      final newQuantity =
+                                          double.tryParse(value) ?? 0.0;
+                                      if (newQuantity >= 0) {
+                                        provider.updateCustomQuantity(
+                                            product.id, newQuantity);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                product.unit,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+
+                  const SizedBox(height: 16),
+
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            provider.initializeCustomQuantities();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const CustomizeComboScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Customize Combo',
+                            style: TextStyle(
+                              color: accentColor,
+                              fontWeight: FontWeight.w500,
                             ),
-                          );
-                        },
-                        child: Text(
-                          'Customize Combo',
-                          style: TextStyle(
-                            color: accentColor,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () =>
-                            _showParticipateDialog(context, recommendation),
-                        icon: const Icon(Icons.group_add),
-                        label: const Text('Join Combo Deal'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: accentColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              _showParticipateDialog(context, recommendation),
+                          icon: const Icon(Icons.group_add),
+                          label: const Text('Join Combo Deal'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -383,6 +505,94 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
     );
   }
 
+  Widget _buildComboImageCollage(
+      ComboBuilderProvider provider, Recommendation recommendation) {
+    final List<Widget> images = [];
+
+    for (final item in recommendation.items) {
+      final product = provider.getProductById(item.productId);
+      if (product != null) {
+        images.add(
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.grey[300]!, width: 1),
+              image: DecorationImage(
+                image: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                    ? NetworkImage(product.imageUrl!)
+                    : const NetworkImage(
+                        'https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    // If we have images, create a collage
+    if (images.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Combo Products:',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: images,
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildCategoryProductAccordions(ComboBuilderProvider provider) {
+    // Group products by category
+    final groupedProducts = <String, List<dynamic>>{};
+
+    for (final product in provider.farmingData!.products) {
+      if (!groupedProducts.containsKey(product.category)) {
+        groupedProducts[product.category] = [];
+      }
+      groupedProducts[product.category]!.add(product);
+    }
+
+    final List<Widget> categoryAccordions = [];
+
+    for (final entry in groupedProducts.entries) {
+      final category = entry.key;
+      final products = entry.value;
+
+      categoryAccordions.add(
+        CategoryAccordion(
+          category: category,
+          products: products,
+        ),
+      );
+    }
+
+    return categoryAccordions;
+  }
+
   void _showParticipationConfirmation(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -436,65 +646,35 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
             },
           ),
 
-          // Expandable content
+          // Expandable content with product cards
           if (_isExpanded)
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: widget.products.map((product) {
-                  return Container(
-                    padding: const EdgeInsets.all(12.0),
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Text(
-                                '₹${product.price.toStringAsFixed(0)} per ${product.unit}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 2 products per row
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 0.75, // Taller cards for vertical layout
+                ),
+                itemCount: widget.products.length,
+                itemBuilder: (context, index) {
+                  final product = widget.products[index];
+                  return VerticalProductCard(
+                    product: product,
+                    onTap: () {
+                      // Navigate to product detail screen or show snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${product.name} tapped'),
+                          duration: const Duration(seconds: 1),
                         ),
-                        if (product.activeDealUuid != null)
-                          TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Individual product deals coming soon!'),
-                                ),
-                              );
-                            },
-                            child: const Text('View Deal'),
-                          )
-                        else
-                          const Text(
-                            'No deal available',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                      ],
-                    ),
+                      );
+                    },
                   );
-                }).toList(),
+                },
               ),
             ),
         ],
