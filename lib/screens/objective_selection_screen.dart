@@ -31,14 +31,6 @@ class ObjectiveSelectionScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'What are you trying to achieve with ${selectedCrop.name}?',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
             const Text(
               'Choose your farming objective to get personalized product recommendations',
               style: TextStyle(

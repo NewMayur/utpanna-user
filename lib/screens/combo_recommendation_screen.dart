@@ -113,7 +113,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '🎯 Recommended Combo',
+                            '🎯 Combo',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -514,8 +514,8 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
       if (product != null) {
         images.add(
           Container(
-            width: 40,
-            height: 40,
+            width: 45,
+            height: 45,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.grey[300]!, width: 1),

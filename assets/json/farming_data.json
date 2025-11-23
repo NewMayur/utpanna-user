@@ -2,76 +2,77 @@
   "crops": [
     {
       "id": "c_cotton",
-      "name": "Cotton",
+      "name": "कापूस",
       "image_asset": "assets/crops/cotton.png"
     },
     {
       "id": "c_soybean",
-      "name": "Soybean",
+      "name": "सोयाबीन",
       "image_asset": "assets/crops/soybean.png"
     },
     {
       "id": "c_chana",
-      "name": "Chana",
+      "name": "हरभरा",
       "image_asset": "assets/crops/chana.png"
     },
     {
-      "id": "c_turmeric",
-      "name": "Turmeric",
+      "id": "c_tur",
+      "name": "तूर",
       "image_asset": "assets/crops/turmeric.png"
     }
   ],
   "objectives": [
-    { "id": "obj_growth", "name": "Vegetative Growth" },
-    { "id": "obj_flower", "name": "Flowering Stage" },
-    { "id": "obj_fruit", "name": "Fruiting Stage" },
-    { "id": "obj_pest", "name": "Pest Control" }
+    { "id": "obj_growth", "name": "वाढीसाठी" },
+    { "id": "obj_branch", "name": "फुटवे काढण्यासाठी" },
+    { "id": "obj_flower", "name": "फुलोरा" },
+    { "id": "obj_fruit", "name": "फळधारणा" },
+    { "id": "obj_pest", "name": "दाण्याचं वजन वाढवणे" }
   ],
   "products": [
     {
       "id": "p_nitro",
-      "name": "NitroBoost Fertilizer",
-      "category": "Fertilizers",
-      "price": 500,
-      "mrp": 650,
+      "name": "19:19:19",
+      "category": "खते",
+      "price": 100,
+      "mrp": 120,
       "unit": "1 L",
-      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
+      "image_url": "https://farmission.in/cdn/shop/files/191919.jpg?v=1721297840&width=360",
       "active_deal_uuid": "uuid-prod-nitro-001"
     },
     {
       "id": "p_pestx",
-      "name": "PestX Insecticide",
-      "category": "Insecticides",
-      "price": 850,
-      "mrp": 1050,
-      "unit": "500 ml",
-      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
+      "name": "Emoctan",
+      "category": "कीटकनाशके",
+      "price": 400,
+      "mrp": 450,
+      "unit": "250 Gms",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_466817041733208556.webp",
       "active_deal_uuid": null
     },
     {
       "id": "p_fungi",
-      "name": "FungiKill",
-      "category": "Fungicide",
-      "price": 300,
-      "mrp": 400,
-      "unit": "250 g",
-      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
+      "name": "STUFF",
+      "category": "बुरशीनाशके",
+      "price": 115,
+      "mrp": 125,
+      "unit": "100 g",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_18398562481746271904.webp",
       "active_deal_uuid": null
     },
     {
       "id": "p_groth",
-      "name": "GrowthMax Fertilizer",
-      "category": "Fertilizers",
-      "price": 650,
-      "mrp": 800,
-      "unit": "1 kg",
-      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
+      "name": "Raiser Humic Acid",
+      "category": "खते",
+      "price": 350,
+      "mrp": 380,
+      "unit": "1 L",
+      "image_url": "https://farmission.in/cdn/shop/files/Raiser.jpg?v=1721297914&width=360",
       "active_deal_uuid": null
     },
     {
       "id": "p_bloom",
       "name": "BloomPlus Fertilizer",
-      "category": "Fertilizers",
+      "category": "खते",
       "price": 450,
       "mrp": 550,
       "unit": "500 g",
@@ -80,12 +81,12 @@
     },
     {
       "id": "p_fruit",
-      "name": "FruitGuard Pesticide",
-      "category": "Pesticides",
-      "price": 750,
-      "mrp": 900,
+      "name": "TopUp",
+      "category": "टॉनिक",
+      "price": 550,
+      "mrp": 600,
       "unit": "1 L",
-      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp",
+      "image_url": "https://farmission.in/cdn/shop/files/TopUp.jpg?v=1721297801&width=360",
       "active_deal_uuid": null
     }
   ],
@@ -118,7 +119,7 @@
       "items": [{ "product_id": "p_nitro", "qty_acre": 0.8, "qty_pump": 0.08 }]
     },
     {
-      "crop_id": "c_turmeric",
+      "crop_id": "c_tur",
       "objective_id": "obj_pest",
       "deal_uuid": "DEAL-TURMERIC-PEST-2024",
       "combo_title": "Turmeric Pest Control",

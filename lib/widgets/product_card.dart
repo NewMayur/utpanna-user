@@ -83,9 +83,9 @@ class VerticalProductCard extends StatelessWidget {
         child: IntrinsicHeight(
           // Allow height to fit content
           child: Container(
-            width: 180, // Slightly wider to accommodate content
+            width: 190, // Increased by 10px (5px larger images)
             constraints:
-                const BoxConstraints(maxWidth: 200), // Max width constraint
+                const BoxConstraints(maxWidth: 210), // Max width constraint
             padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisSize: MainAxisSize.min, // Fit to content height

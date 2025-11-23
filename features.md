@@ -44,23 +44,25 @@ Create a file `assets/json/farming_data.json`. This file drives the UI until a "
     }
   ],
   "objectives": [
-    { "id": "obj_growth", "name": "Vegetative Growth" },
-    { "id": "obj_flower", "name": "Flowering Stage" },
-    { "id": "obj_pest", "name": "Pest Control" }
+    { "id": "obj_growth", "name": "वाढीसाठी" },
+    { "id": "obj_branch", "name": "फुटवे काढण्यासाठी" },
+    { "id": "obj_flower", "name": "फुलोरा" },
+    { "id": "obj_fruit", "name": "फळधारणा" },
+    { "id": "obj_pest", "name": "दाण्याचं वजन वाढवणे" }
   ],
   "products": [
     {
       "id": "p_nitro",
       "name": "NitroBoost Fertilizer",
-      "category": "Fertilizers",
+      "category": "खते",
       "price": 500,
       "unit": "1 L",
       "active_deal_uuid": "uuid-prod-nitro-001"
     },
     {
       "id": "p_pestx",
-      "name": "PestX Insecticide",
-      "category": "Insecticides",
+      "name": "PestX कीटकनाशके",
+      "category": "कीटकनाशके",
       "price": 850,
       "unit": "500 ml",
       "active_deal_uuid": null
@@ -68,7 +70,7 @@ Create a file `assets/json/farming_data.json`. This file drives the UI until a "
     {
       "id": "p_fungi",
       "name": "FungiKill",
-      "category": "Fungicide",
+      "category": "बुरशीनाशके",
       "price": 300,
       "unit": "250 g",
       "active_deal_uuid": null

@@ -191,14 +191,6 @@ class CropSelectionBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Welcome to Utpanna',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
               'Choose your crop to get personalized product recommendations',
               style: TextStyle(
                 fontSize: 16,

@@ -64,7 +64,7 @@ class OrderHistoryScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildOrderItem(
-              'Organic Fertilizers',
+              'Organic खते',
               'In Transit',
               '12346',
               '50 kg',
@@ -73,7 +73,7 @@ class OrderHistoryScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildOrderItem(
-              'Effective Pesticides',
+              'Effective टॉनिक',
               'Pending',
               '12347',
               '30 kg',
@@ -93,7 +93,8 @@ class OrderHistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderItem(String title, String status, String orderId, String quantity, String orderDate, Color statusColor) {
+  Widget _buildOrderItem(String title, String status, String orderId,
+      String quantity, String orderDate, Color statusColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -108,11 +109,13 @@ class OrderHistoryScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
                 status,
-                style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: statusColor, fontWeight: FontWeight.bold),
               ),
             ],
           ),
