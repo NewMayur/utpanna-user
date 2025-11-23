@@ -18,6 +18,9 @@ class ComboBuilderProvider with ChangeNotifier {
   Set<String> _includedProducts = {}; // Products included in custom combo
   bool _isByAcre = true; // Toggle between acre/pump
 
+  // Maharashtra Agricultural Standards
+  static const double pumpsPerAcre = 5.0; // 1 pump covers ~0.2 acres
+
   // Getters
   FarmingData? get farmingData => _farmingData;
   bool get isLoading => _isLoading;
@@ -100,7 +103,7 @@ class ComboBuilderProvider with ChangeNotifier {
 
     double total = 0.0;
 
-    // Calculate based on included products and their custom quantities
+    // Calculate total product purchase cost
     for (final productId in _includedProducts) {
       final product = getProductById(productId);
       if (product != null) {
@@ -109,7 +112,15 @@ class ComboBuilderProvider with ChangeNotifier {
       }
     }
 
-    return total;
+    // Apply pricing mode logic based on Maharashtra agricultural practices
+    // The quantities entered are treated as "per acre" quantities
+    if (_isByAcre) {
+      // Per Acre: Show total cost for 1 acre application
+      return total;
+    } else {
+      // Per Pump: Show cost for one pump application = total acre cost ÷ pumps per acre
+      return total / pumpsPerAcre;
+    }
   }
 
   void initializeCustomQuantities() {

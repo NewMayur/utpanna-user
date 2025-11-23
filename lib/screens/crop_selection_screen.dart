@@ -80,19 +80,32 @@ class CropSelectionScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Placeholder for crop image
+                          // Crop image
                           Container(
                             width: 80,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: Colors.green.shade100,
                               borderRadius: BorderRadius.circular(40),
+                              image: crop.imageAsset.isNotEmpty
+                                  ? DecorationImage(
+                                      image: AssetImage(crop.imageAsset),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
                             ),
-                            child: const Icon(
-                              Icons.grass,
-                              size: 40,
-                              color: Colors.green,
-                            ),
+                            child: crop.imageAsset.isEmpty
+                                ? Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade100,
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                    child: const Icon(
+                                      Icons.grass,
+                                      size: 40,
+                                      color: Colors.green,
+                                    ),
+                                  )
+                                : null,
                           ),
                           const SizedBox(height: 12),
                           Text(
