@@ -114,12 +114,13 @@
     {
       "crop_id": "c_chana",
       "objective_id": "obj_growth",
-      "deal_uuid": "DEAL-CHANA-GROWTH-2024",
+      "deal_uuid": "49823ec2-8ef4-43e2-8bcb-349217971df6",
       "combo_title": "Chana Growth Combo",
       "items": [
         { "product_id": "p_nitro", "qty_acre": 1, "qty_pump": 0.08 },
         { "product_id": "p_pestx", "qty_acre": 1, "qty_pump": 0.05 },
-        { "product_id": "p_fruit", "qty_acre": 1, "qty_pump": 0.04 }
+        { "product_id": "p_fruit", "qty_acre": 1, "qty_pump": 0.04 },
+        { "product_id": "p_fungi", "qty_acre": 1, "qty_pump": 0.05 }
       ]
     },
     {

@@ -113,7 +113,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            '🎯 Combo',
+                            '🎯 कॉम्बो',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
