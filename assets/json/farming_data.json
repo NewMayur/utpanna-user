@@ -97,8 +97,8 @@
       "deal_uuid": "DEAL-COTTON-GROWTH-2024",
       "combo_title": "Cotton Growth Special",
       "items": [
-        { "product_id": "p_nitro", "qty_acre": 1.0, "qty_pump": 0.1 },
-        { "product_id": "p_pestx", "qty_acre": 0.5, "qty_pump": 0.05 }
+        { "product_id": "p_nitro", "qty_acre": 1, "qty_pump": 0.1 },
+        { "product_id": "p_pestx", "qty_acre": 1, "qty_pump": 0.05 }
       ]
     },
     {
@@ -116,7 +116,11 @@
       "objective_id": "obj_growth",
       "deal_uuid": "DEAL-CHANA-GROWTH-2024",
       "combo_title": "Chana Growth Combo",
-      "items": [{ "product_id": "p_nitro", "qty_acre": 0.8, "qty_pump": 0.08 }]
+      "items": [
+        { "product_id": "p_nitro", "qty_acre": 1, "qty_pump": 0.08 },
+        { "product_id": "p_pestx", "qty_acre": 1, "qty_pump": 0.05 },
+        { "product_id": "p_fruit", "qty_acre": 1, "qty_pump": 0.04 }
+      ]
     },
     {
       "crop_id": "c_tur",
