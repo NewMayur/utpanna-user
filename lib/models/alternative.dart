@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Alternative {
   final String id;
   final String productId;
@@ -10,6 +12,7 @@ class Alternative {
   final String activeIngredient;
   final String usageDirection;
   final List<String> usedFor;
+  final int viewCount; // Tracks user views/impressions
 
   Alternative({
     required this.id,
@@ -23,6 +26,7 @@ class Alternative {
     required this.activeIngredient,
     required this.usageDirection,
     required this.usedFor,
+    this.viewCount = 0,
   });
 
   factory Alternative.fromJson(Map<String, dynamic> json) {
@@ -40,13 +44,47 @@ class Alternative {
       modeOfAction: (json['mode_of_action'] ?? '').toString(),
       activeIngredient: (json['active_ingredient'] ?? '').toString(),
       usageDirection: (json['usage_direction'] ?? '').toString(),
-      usedFor: json['used_for'] is List 
-        ? List<String>.from(json['used_for'].map((e) => e.toString())) 
-        : [],
+      usedFor: json['used_for'] is List
+          ? List<String>.from(json['used_for'].map((e) => e.toString()))
+          : [],
     );
   }
 
+  factory Alternative.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Alternative(
+      id: doc.id,
+      productId: data['productId'] ?? '',
+      title: data['title'] ?? '',
+      imageUrls:
+          data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : [],
+      price: _parseDouble(data['price']),
+      savings: _parseDouble(data['savings']),
+      chemicalComposition: data['chemicalComposition'] ?? '',
+      modeOfAction: data['modeOfAction'] ?? '',
+      activeIngredient: data['activeIngredient'] ?? '',
+      usageDirection: data['usageDirection'] ?? '',
+      usedFor:
+          data['usedFor'] != null ? List<String>.from(data['usedFor']) : [],
+      viewCount: data['viewCount'] ?? 0,
+    );
+  }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'productId': productId,
+      'title': title,
+      'imageUrls': imageUrls,
+      'price': price,
+      'savings': savings,
+      'chemicalComposition': chemicalComposition,
+      'modeOfAction': modeOfAction,
+      'activeIngredient': activeIngredient,
+      'usageDirection': usageDirection,
+      'usedFor': usedFor,
+      'viewCount': viewCount,
+    };
+  }
 
   // Helper method to safely convert to double (copied from product.dart)
   static double _parseDouble(dynamic value) {

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'alternative.dart'; // Import the corrected Alternative model
 
 class Product {
@@ -38,8 +39,10 @@ class Product {
     if (json['alternatives'] is List) {
       try {
         parsedAlternatives = (json['alternatives'] as List)
-            .where((altJson) => altJson is Map<String, dynamic>) // Ensure each item is a valid map
-            .map((altJson) => Alternative.fromJson(altJson as Map<String, dynamic>))
+            .where((altJson) => altJson
+                is Map<String, dynamic>) // Ensure each item is a valid map
+            .map((altJson) =>
+                Alternative.fromJson(altJson as Map<String, dynamic>))
             .toList();
       } catch (e) {
         // Log error for debugging (replace with your preferred logging mechanism)
@@ -74,7 +77,46 @@ class Product {
     );
   }
 
+  factory Product.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Product(
+      id: doc.id,
+      title: data['title'] ?? '',
+      imageUrls:
+          data['imageUrls'] != null ? List<String>.from(data['imageUrls']) : [],
+      mrp: _parseDouble(data['mrp']),
+      broadCategory: data['broadCategory'] ?? '',
+      crops: data['crops'] != null ? List<String>.from(data['crops']) : [],
+      savings: _parseDoubleOptional(data['savings']),
+      openUrl: data['openUrl'],
+      activeIngredient: data['activeIngredient'],
+      chemicalComposition: data['chemicalComposition'],
+      modeOfAction: data['modeOfAction'],
+      usageDirection: data['usageDirection'],
+      alternatives: data['alternatives'] != null
+          ? (data['alternatives'] as List)
+              .map((alt) => Alternative.fromFirestore(alt))
+              .toList()
+          : null,
+    );
+  }
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'imageUrls': imageUrls,
+      'mrp': mrp,
+      'broadCategory': broadCategory,
+      'crops': crops,
+      'savings': savings,
+      'openUrl': openUrl,
+      'activeIngredient': activeIngredient,
+      'chemicalComposition': chemicalComposition,
+      'modeOfAction': modeOfAction,
+      'usageDirection': usageDirection,
+      'alternatives': alternatives?.map((alt) => alt.toFirestore()).toList(),
+    };
+  }
 
   // Helper method to safely convert to double
   static double _parseDouble(dynamic value) {

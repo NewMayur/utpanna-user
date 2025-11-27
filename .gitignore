@@ -47,6 +47,11 @@ app.*.map.json
 # Firebase files
 .firebase/
 
+# Environment files
+.env.local
+.env.production
+.env.*
+
 linux/
 windows/
 .firebase/

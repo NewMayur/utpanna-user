@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../utils/constants.dart';
+import '../models/user_details.dart';
+import '../repositories/user_repository.dart';
+import '../api/firestore_client.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -82,40 +82,40 @@ class AuthService {
     await prefs.remove('sessionExpiry');
   }
 
+  /// Create or update user profile in Firestore
   Future<bool> updateUserDetails(
       String name, String address, String idToken) async {
     try {
-      final response = await http.post(
-        Uri.parse('${Constants.apiUrl}/user/details'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $idToken',
-        },
-        body: jsonEncode({
+      final user = _auth.currentUser;
+      if (user == null) return false;
+
+      // Check if user already exists
+      final userRepository = UserRepository(FirestoreClient());
+      final existingUser = await userRepository.getUserById(user.uid);
+
+      if (existingUser == null) {
+        // Create new user
+        final newUser = UserDetails(
+          id: user.uid,
+          name: name,
+          phoneNumber: user.phoneNumber ?? '',
+          address: address,
+        );
+        await userRepository.createUser(newUser);
+      } else {
+        // Update existing user
+        await userRepository.updateUser(user.uid, {
           'name': name,
           'address': address,
-        }),
-      );
-      return response.statusCode == 200;
+        });
+      }
+
+      return true;
     } catch (e) {
       return false;
     }
   }
 
-  Future<bool> participateInDeal(String dealId, String idToken) async {
-    final response = await http.post(
-      Uri.parse('${Constants.apiUrl}/deals/$dealId/participate'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $idToken',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      final errorData = json.decode(response.body);
-      throw Exception(errorData['error'] ?? 'Failed to participate in deal');
-    }
-  }
+  /// Get current user from Firebase Auth
+  User? get currentUser => _auth.currentUser;
 }

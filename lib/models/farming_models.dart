@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Crop {
   final String id;
   final String name;
@@ -16,6 +18,22 @@ class Crop {
       imageAsset: json['image_asset'] ?? '',
     );
   }
+
+  factory Crop.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Crop(
+      id: doc.id,
+      name: data['name'] ?? '',
+      imageAsset: data['imageAsset'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'imageAsset': imageAsset,
+    };
+  }
 }
 
 class Objective {
@@ -32,6 +50,20 @@ class Objective {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
     );
+  }
+
+  factory Objective.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Objective(
+      id: doc.id,
+      name: data['name'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+    };
   }
 }
 
@@ -70,6 +102,32 @@ class FarmingProduct {
     );
   }
 
+  factory FarmingProduct.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return FarmingProduct(
+      id: doc.id,
+      name: data['name'] ?? '',
+      category: data['category'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      mrp: (data['mrp'] ?? data['price'] ?? 0).toDouble(),
+      unit: data['unit'] ?? '',
+      imageUrl: data['imageUrl'],
+      activeDealUuid: data['activeDealUuid'],
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'category': category,
+      'price': price,
+      'mrp': mrp,
+      'unit': unit,
+      'imageUrl': imageUrl,
+      'activeDealUuid': activeDealUuid,
+    };
+  }
+
   // Calculate discount percentage
   double get discountPercent {
     if (mrp <= 0) return 0;
@@ -94,6 +152,30 @@ class RecommendationItem {
       qtyAcre: (json['qty_acre'] ?? 0).toDouble(),
       qtyPump: (json['qty_pump'] ?? 0).toDouble(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'product_id': productId,
+      'qty_acre': qtyAcre,
+      'qty_pump': qtyPump,
+    };
+  }
+
+  factory RecommendationItem.fromFirestore(Map<String, dynamic> data) {
+    return RecommendationItem(
+      productId: data['productId'] ?? '',
+      qtyAcre: (data['qtyAcre'] ?? 0).toDouble(),
+      qtyPump: (data['qtyPump'] ?? 0).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'productId': productId,
+      'qtyAcre': qtyAcre,
+      'qtyPump': qtyPump,
+    };
   }
 }
 
@@ -123,6 +205,29 @@ class Recommendation {
           .toList(),
     );
   }
+
+  factory Recommendation.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Recommendation(
+      cropId: doc.id.split('_')[0], // Assuming ID format: cropId_objectiveId
+      objectiveId: doc.id.split('_')[1],
+      dealUuid: data['dealUuid'] ?? '',
+      comboTitle: data['comboTitle'] ?? '',
+      items: (data['items'] as List<dynamic>? ?? [])
+          .map((item) => RecommendationItem.fromFirestore(item))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'dealUuid': dealUuid,
+      'comboTitle': comboTitle,
+      'items': items.map((item) => item.toFirestore()).toList(),
+    };
+  }
+
+  String get documentId => '${cropId}_${objectiveId}';
 }
 
 class FarmingData {

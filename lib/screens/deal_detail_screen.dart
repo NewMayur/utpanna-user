@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/deal.dart';
 import '../services/auth_service.dart';
 import '../models/user_details.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../utils/constants.dart';
+import '../providers/deal_provider.dart';
 
 class DealDetailScreen extends StatefulWidget {
   final Deal deal;
@@ -68,7 +68,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         itemCount: widget.deal.images?.length ?? 1,
                         itemBuilder: (context, index) {
                           return AspectRatio(
-                            aspectRatio: 3/4,
+                            aspectRatio: 3 / 4,
                             child: Image.network(
                               widget.deal.images?.isNotEmpty == true
                                   ? widget.deal.images![index]
@@ -244,7 +244,8 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                               // Implement call functionality
                             },
                             icon: Icon(Icons.phone, color: Colors.white),
-                            label: Text('Call us now', style: TextStyle(color: Colors.white)),
+                            label: Text('Call us now',
+                                style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: accentColor,
                               shape: RoundedRectangleBorder(
@@ -293,8 +294,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
         return AlertDialog(
           title: Text('Join the Deal'),
           content: Text(
-            "Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to join this deal?"
-          ),
+              "Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to join this deal?"),
           actions: <Widget>[
             TextButton(
               child: Text('Cancel'),
@@ -376,18 +376,34 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
 
                 if (detailsUpdated) {
                   try {
-                    bool participated = await _authService.participateInDeal(widget.deal.id, idToken);
-                    Navigator.of(context).pop();
-                    if (participated) {
-                      _showParticipationConfirmation(context, 'Successfully joined the deal!');
+                    // Get current user ID for Firebase participation
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('User not authenticated')),
+                      );
+                      return;
                     }
+
+                    // Use DealProvider instead of HTTP REST API
+                    await context.read<DealProvider>().participateInDeal(
+                          widget.deal.id,
+                          user.uid,
+                        );
+
+                    Navigator.of(context).pop();
+                    _showParticipationConfirmation(
+                        context, 'Successfully joined the deal!');
                   } catch (e) {
                     String errorMessage = e.toString();
                     if (errorMessage.contains('Already participated')) {
-                      _showParticipationConfirmation(context, 'You have already joined this deal');
+                      _showParticipationConfirmation(
+                          context, 'You have already joined this deal');
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to join deal: $errorMessage')),
+                        SnackBar(
+                            content:
+                                Text('Failed to join deal: $errorMessage')),
                       );
                     }
                   }

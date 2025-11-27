@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'dart:convert';
 import '../models/farming_models.dart';
+import '../services/farming_data_service.dart';
 
 class ComboBuilderProvider with ChangeNotifier {
   FarmingData? _farmingData;
@@ -41,11 +40,8 @@ class ComboBuilderProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      final String jsonString =
-          await rootBundle.loadString('assets/json/farming_data.json');
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-
-      _farmingData = FarmingData.fromJson(jsonData);
+      // Load farming data from Firebase using FarmingDataService
+      _farmingData = await FarmingDataService().loadAllFarmingData();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -53,6 +49,12 @@ class ComboBuilderProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Fallback method to load from local assets (for development/testing)
+  Future<void> loadFarmingDataFromAssets() async {
+    // Keep the original JSON loading as fallback if needed for testing
+    // Implementation removed - now only uses Firebase
   }
 
   void selectCrop(Crop crop) {

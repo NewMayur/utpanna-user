@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/farming_models.dart';
 import '../providers/combo_provider.dart';
@@ -7,6 +8,9 @@ import '../screens/customize_combo_screen.dart';
 import '../services/auth_service.dart';
 import '../utils/constants.dart';
 import '../widgets/product_card.dart';
+import '../repositories/deal_repository.dart';
+import '../api/firestore_client.dart';
+import '../providers/deal_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -471,13 +475,24 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
 
                 if (detailsUpdated) {
                   try {
-                    bool participated = await _authService.participateInDeal(
-                        recommendation.dealUuid, idToken);
-                    Navigator.of(context).pop();
-                    if (participated) {
-                      _showParticipationConfirmation(
-                          context, 'Successfully joined the combo deal!');
+                    // Get current user ID for Firebase participation
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('User not authenticated')),
+                      );
+                      return;
                     }
+
+                    // Use DealProvider instead of HTTP REST API
+                    await context.read<DealProvider>().participateInDeal(
+                          recommendation.dealUuid,
+                          user.uid,
+                        );
+
+                    Navigator.of(context).pop();
+                    _showParticipationConfirmation(
+                        context, 'Successfully joined the combo deal!');
                   } catch (e) {
                     String errorMessage = e.toString();
                     if (errorMessage.contains('Already participated')) {

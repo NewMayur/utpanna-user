@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:utpanna/screens/home_screen.dart';
 import 'screens/deals_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,44 +13,25 @@ import 'screens/objective_selection_screen.dart';
 import 'screens/combo_recommendation_screen.dart';
 
 import 'providers/combo_provider.dart';
+import 'providers/deal_provider.dart';
+import 'providers/alternative_provider.dart';
+import 'utils/firebase_config.dart';
 
-//dev
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: FirebaseOptions(
-        apiKey: "AIzaSyDiVSLs3goLrzmndUyLa9Sjp0gs4ovHHhA",
-        authDomain: "utpanna-dev.firebaseapp.com",
-        projectId: "utpanna-dev",
-        storageBucket: "utpanna-dev.appspot.com",
-        messagingSenderId: "340480522275",
-        appId: "1:340480522275:web:a5ee3291e33894978ad996"),
-  );
+  await FirebaseConfig.initialize();
   runApp(MyApp());
 }
-
-// stag
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp(
-//     options: FirebaseOptions(
-//       apiKey: "AIzaSyC5bkN7NgLCif4beAhYAzsddvHzkLNqIy4",
-//       authDomain: "utpanna-stag-197de.firebaseapp.com",
-//       projectId: "utpanna-stag-197de",
-//       storageBucket: "utpanna-stag-197de.appspot.com",
-//       messagingSenderId: "466091422192",
-//       appId: "1:466091422192:web:28a92ade7ec36391bbad35",
-//       measurementId: "G-N6J4C0XDSB"
-//     ),
-//   );
-//   runApp(MyApp());
-// }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ComboBuilderProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ComboBuilderProvider()),
+        ChangeNotifierProvider(create: (context) => DealProvider()),
+        ChangeNotifierProvider(create: (context) => AlternativeProvider()),
+      ],
       child: MaterialApp(
         title: 'Utpanna',
         theme: ThemeData(
