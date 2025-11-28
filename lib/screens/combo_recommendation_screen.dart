@@ -44,25 +44,13 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ComboBuilderProvider>(context);
-    final recommendation = provider.currentRecommendation;
-
-    if (recommendation == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Recommendations'),
-        ),
-        body: const Center(
-          child: Text('No recommendation available'),
-        ),
-      );
-    }
-
     final selectedCrop = provider.selectedCrop!;
     final selectedObjective = provider.selectedObjective!;
+    final recommendation = provider.currentRecommendation;
     final allProducts = provider.farmingData!.products;
-    final groupedProducts = <String, List<dynamic>>{};
 
-    // Group all products by category
+    // Group ALL products by category (not just recommendation products)
+    final groupedProducts = <String, List<dynamic>>{};
     for (final product in allProducts) {
       final category = product.category;
       if (!groupedProducts.containsKey(category)) {
@@ -125,7 +113,8 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            recommendation.comboTitle,
+                            recommendation?.comboTitle ??
+                                'Products & Recommendations',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
@@ -218,120 +207,141 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                   const SizedBox(height: 16),
 
                   // Combo items with quantity inputs
-                  const Text(
-                    'Adjust Quantities (varies by land size):',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
+                  if (recommendation != null) ...[
+                    const Text(
+                      'Adjust Quantities (varies by land size):',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                    ...recommendation.items.map((item) {
+                      final product = provider.getProductById(item.productId);
+                      if (product == null) return const SizedBox.shrink();
 
-                  ...recommendation.items.map((item) {
-                    final product = provider.getProductById(item.productId);
-                    if (product == null) return const SizedBox.shrink();
+                      final quantityText =
+                          provider.customQuantities[product.id]?.toString() ??
+                              item.qtyAcre.toString();
+                      final quantity =
+                          double.tryParse(quantityText) ?? item.qtyAcre;
+                      final itemTotal = quantity * product.price;
 
-                    final quantityText =
-                        provider.customQuantities[product.id]?.toString() ??
-                            item.qtyAcre.toString();
-                    final quantity =
-                        double.tryParse(quantityText) ?? item.qtyAcre;
-                    final itemTotal = quantity * product.price;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  product.name,
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    product.name,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '₹${itemTotal.toStringAsFixed(0)}',
                                   style: const TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF44aa00),
                                   ),
                                 ),
-                              ),
-                              Text(
-                                '₹${itemTotal.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF44aa00),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Text(
+                                  'Quantity: ',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Text(
-                                'Quantity: ',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Expanded(
-                                child: SizedBox(
-                                  width: 100,
-                                  height: 40,
-                                  child: TextFormField(
-                                    initialValue: quantityText,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 4),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey),
+                                Expanded(
+                                  child: SizedBox(
+                                    width: 100,
+                                    height: 40,
+                                    child: TextFormField(
+                                      initialValue: quantityText,
+                                      textAlign: TextAlign.center,
+                                      decoration: InputDecoration(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 4),
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          borderSide: const BorderSide(
+                                              color: Colors.grey),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          borderSide: const BorderSide(
+                                              color: Colors.grey),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          borderSide: const BorderSide(
+                                              color: Color(0xFF44aa00)),
+                                        ),
+                                        hintText: '0.0',
                                       ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFF44aa00)),
-                                      ),
-                                      hintText: '0.0',
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      style: const TextStyle(fontSize: 14),
+                                      onChanged: (value) {
+                                        final newQuantity =
+                                            double.tryParse(value) ?? 0.0;
+                                        if (newQuantity >= 0) {
+                                          provider.updateCustomQuantity(
+                                              product.id, newQuantity);
+                                        }
+                                      },
                                     ),
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    style: const TextStyle(fontSize: 14),
-                                    onChanged: (value) {
-                                      final newQuantity =
-                                          double.tryParse(value) ?? 0.0;
-                                      if (newQuantity >= 0) {
-                                        provider.updateCustomQuantity(
-                                            product.id, newQuantity);
-                                      }
-                                    },
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                product.unit,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
+                                const SizedBox(width: 8),
+                                Text(
+                                  product.unit,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ] else ...[
+                    const Text(
+                      'Browse available products by category above',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
                       ),
-                    );
-                  }).toList(),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Select products you want to use and adjust quantities as needed.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
 
                   const SizedBox(height: 16),
 
@@ -360,19 +370,37 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              _showParticipateDialog(context, recommendation),
-                          icon: const Icon(Icons.group_add),
-                          label: const Text('Join Combo Deal'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accentColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                      if (recommendation != null)
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () =>
+                                _showParticipateDialog(context, recommendation),
+                            icon: const Icon(Icons.group_add),
+                            label: const Text('Join Combo Deal'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: accentColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        )
+                      else
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () =>
+                                ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('No active deal available')),
+                            ),
+                            icon: const Icon(Icons.info_outline),
+                            label: const Text('No Deal Available'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[400],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ],
@@ -521,29 +549,32 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
   }
 
   Widget _buildComboImageCollage(
-      ComboBuilderProvider provider, Recommendation recommendation) {
+      ComboBuilderProvider provider, Recommendation? recommendation) {
     final List<Widget> images = [];
 
-    for (final item in recommendation.items) {
-      final product = provider.getProductById(item.productId);
-      if (product != null) {
-        images.add(
-          Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.grey[300]!, width: 1),
-              image: DecorationImage(
-                image: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                    ? NetworkImage(product.imageUrl!)
-                    : const NetworkImage(
-                        'https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp'),
-                fit: BoxFit.cover,
+    if (recommendation != null) {
+      for (final item in recommendation.items) {
+        final product = provider.getProductById(item.productId);
+        if (product != null) {
+          images.add(
+            Container(
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey[300]!, width: 1),
+                image: DecorationImage(
+                  image: product.imageUrl != null &&
+                          product.imageUrl!.isNotEmpty
+                      ? NetworkImage(product.imageUrl!)
+                      : const NetworkImage(
+                          'https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_19318456721733210100.webp'),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-        );
+          );
+        }
       }
     }
 

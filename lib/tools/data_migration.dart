@@ -224,7 +224,8 @@ class DataMigration {
       try {
         await recommendationRepository.createRecommendation(recommendation);
         migrated++;
-        print('  ✅ Migrated recommendation: ${recommendation.dealUuid}');
+        print(
+            '  ✅ Migrated recommendation: ${recommendation.dealUuid} (${recommendation.cropId} → ${recommendation.objectiveId})');
       } catch (e) {
         print(
             '  ❌ Failed to migrate recommendation ${recommendation.dealUuid}: $e');

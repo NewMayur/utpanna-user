@@ -76,19 +76,15 @@ class ObjectiveSelectionScreen extends StatelessWidget {
                       onTap: () {
                         provider.selectObjective(objective);
 
-                        if (provider.currentRecommendation != null) {
-                          Navigator.pushNamed(
-                              context, '/combo/recommendations');
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'No active deals available for ${selectedCrop.name} + ${objective.name}',
-                              ),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        }
+                        // Always navigate to combo recommendation screen
+                        // Screen will show products categorized even without deals
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const ComboRecommendationScreen(),
+                          ),
+                        );
                       },
                     ),
                   );

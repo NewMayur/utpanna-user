@@ -209,8 +209,8 @@ class Recommendation {
   factory Recommendation.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return Recommendation(
-      cropId: doc.id.split('_')[0], // Assuming ID format: cropId_objectiveId
-      objectiveId: doc.id.split('_')[1],
+      cropId: data['cropId'] ?? '',
+      objectiveId: data['objectiveId'] ?? '',
       dealUuid: data['dealUuid'] ?? '',
       comboTitle: data['comboTitle'] ?? '',
       items: (data['items'] as List<dynamic>? ?? [])
@@ -221,6 +221,8 @@ class Recommendation {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'cropId': cropId,
+      'objectiveId': objectiveId,
       'dealUuid': dealUuid,
       'comboTitle': comboTitle,
       'items': items.map((item) => item.toFirestore()).toList(),

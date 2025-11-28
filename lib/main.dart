@@ -16,6 +16,7 @@ import 'providers/combo_provider.dart';
 import 'providers/deal_provider.dart';
 import 'providers/alternative_provider.dart';
 import 'utils/firebase_config.dart';
+import 'tools/data_migration.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/home': (context) => const HomeScreen(),
           '/deals': (context) => const DealsScreen(),
+          '/data-migration': (context) => const MigrationWidget(),
           '/combo/select-crop': (context) => const CropSelectionScreen(),
           '/combo/select-objective': (context) =>
               const ObjectiveSelectionScreen(),
