@@ -5,6 +5,7 @@ import '../models/user_details.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import '../utils/constants.dart';
 
 class DealDetailScreen extends StatefulWidget {
@@ -522,9 +523,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
   }
 
   Future<void> _shareDealOnWhatsApp(BuildContext context, Deal deal) async {
-    try {
-      final String message = """
-
+    final String message = """
 🌾 ${deal.title}
 
 💰 ग्रुप किंमत: ₹${deal.deal_price.toStringAsFixed(0)} / प्रति एकर
@@ -534,9 +533,10 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
 
 🔗 ग्रुप पूर्ण व्हायच्या आधी जॉईन करा आणि आपला ऑर्डर बुक करा !
 
-👉 *जॉईन करा:* https://utpanna.live
-      """;
+👉 *जॉईन करा:* https://app.utpanna.in
+    """;
 
+    try {
       final String whatsappUrl =
           "https://wa.me/?text=${Uri.encodeComponent(message)}";
 
@@ -545,15 +545,77 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        throw Exception('Could not launch WhatsApp');
+        // Fallback for web: show message to user
+        await _showWebShareDialog(context, message);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to open WhatsApp: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // Handle web specifically
+      if (e.toString().contains('MissingPluginException') ||
+          e.toString().contains('no implementation found')) {
+        await _showWebShareDialog(context, message);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to open WhatsApp: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
+  }
+
+  Future<void> _showWebShareDialog(BuildContext context, String message) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Image.asset(
+                'assets/icons/whatsapp.png',
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 8),
+              const Text('Share Deal'),
+            ],
+          ),
+          content: Container(
+            constraints: BoxConstraints(maxHeight: 200),
+            child: SingleChildScrollView(
+              child: SelectableText(
+                message.trim(),
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('Copy Message'),
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: message));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        'Message copied to clipboard! Open WhatsApp and paste to share.'),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

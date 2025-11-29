@@ -46,16 +46,16 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   ),
                 ),
                 SizedBox(height: 16), // Add spacing between logo and heading
-                Center(
-                  child: Text(
-                    'Login',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: accentColor,
-                    ),
-                  ),
-                ),
+                // Center(
+                //   child: Text(
+                //     'Login',
+                //     style: TextStyle(
+                //       fontSize: 24,
+                //       fontWeight: FontWeight.bold,
+                //       color: accentColor,
+                //     ),
+                //   ),
+                // ),
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -109,7 +109,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'ग्रुप मध्ये एकत्र येऊन 💰 चांगल्या किमतीवर कॉम्बो खरेदी करू शकता',
+                              'ग्रुप मध्ये एकत्र येऊन 💰 चांगल्या किमतीवर कॉम्बो खरेदी करून बचत करू शकता',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
