@@ -3,6 +3,7 @@ import '../models/deal.dart';
 import '../services/auth_service.dart';
 import '../models/user_details.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import '../utils/constants.dart';
 
@@ -94,7 +95,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
     final dealMessage = _getDealMessage();
     final showJoinButton = currentDeal.status.toLowerCase() == 'open';
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageHeight = (screenWidth * 4) / 3; // 3:4 aspect ratio
+    final imageHeight = ((screenWidth * 4) / 3) - 20; // 3:4 aspect ratio - 20px
 
     return Scaffold(
       body: Stack(
@@ -319,6 +320,50 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
               ),
             ],
           ),
+          // WhatsApp Share Button - Floating at top
+          Positioned(
+            top: MediaQuery.of(context).padding.top +
+                56, // Below status bar and app bar
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: Colors.grey[300]!, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: InkWell(
+                onTap: () => _shareDealOnWhatsApp(context, currentDeal),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/icons/whatsapp.png',
+                      width: 16,
+                      height: 16,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'ग्रुप पूर्ण करण्यासाठी शेअर करा!',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           if (showJoinButton)
             Positioned(
               left: 16,
@@ -474,5 +519,41 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
         backgroundColor: accentColor,
       ),
     );
+  }
+
+  Future<void> _shareDealOnWhatsApp(BuildContext context, Deal deal) async {
+    try {
+      final String message = """
+
+🌾 ${deal.title}
+
+💰 ग्रुप किंमत: ₹${deal.deal_price.toStringAsFixed(0)} / प्रति एकर
+💸 MRP: ₹${deal.mrp.toStringAsFixed(0)}
+
+🪑 जागा बाकी : ${deal.spotsAvailable}
+
+🔗 ग्रुप पूर्ण व्हायच्या आधी जॉईन करा आणि आपला ऑर्डर बुक करा !
+
+👉 *जॉईन करा:* https://utpanna.live
+      """;
+
+      final String whatsappUrl =
+          "https://wa.me/?text=${Uri.encodeComponent(message)}";
+
+      final Uri uri = Uri.parse(whatsappUrl);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Could not launch WhatsApp');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to open WhatsApp: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

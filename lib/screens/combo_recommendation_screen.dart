@@ -188,33 +188,35 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                 const SizedBox(height: 12),
 
                 // Pricing toggle - Always visible
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ChoiceChip(
-                        label: const Text('प्रति एकर'),
-                        selected: provider.isByAcre,
-                        onSelected: (selected) {
-                          if (selected) provider.togglePricingMode();
-                        },
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ChoiceChip(
+                      label: const Text(
+                        'प्रति एकर',
+                        style: TextStyle(fontSize: 12),
                       ),
-                      const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('प्रति पंप'),
-                        selected: !provider.isByAcre,
-                        onSelected: (selected) {
-                          if (selected) provider.togglePricingMode();
-                        },
+                      selected: provider.isByAcre,
+                      selectedColor: accentColor,
+                      backgroundColor: Colors.white.withOpacity(0.7),
+                      onSelected: (selected) {
+                        if (selected) provider.togglePricingMode();
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: const Text(
+                        'प्रति पंप',
+                        style: TextStyle(fontSize: 12),
                       ),
-                    ],
-                  ),
+                      selected: !provider.isByAcre,
+                      selectedColor: accentColor,
+                      backgroundColor: Colors.white.withOpacity(0.7),
+                      onSelected: (selected) {
+                        if (selected) provider.togglePricingMode();
+                      },
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 12),

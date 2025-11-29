@@ -56,7 +56,73 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 32),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                        color: accentColor.withOpacity(0.3), width: 1),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text('🌾', style: TextStyle(fontSize: 20)),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'आपल्या मुख्य पिकांच्या टप्प्यानुसार उत्पादने बघू शकता',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Text('💦', style: TextStyle(fontSize: 20)),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'प्रत्येक फवारणी साठी कॉम्बो नुसार फवारणी खर्च काढू शकता',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Text('👥', style: TextStyle(fontSize: 20)),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'ग्रुप मध्ये एकत्र येऊन 💰 चांगल्या किमतीवर कॉम्बो खरेदी करू शकता',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
                 TextField(
                   controller: _phoneController,
                   decoration: InputDecoration(

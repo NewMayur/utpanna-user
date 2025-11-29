@@ -111,6 +111,17 @@ class CropSelectionBody extends StatelessWidget {
       {Key? key, required this.deals, required this.dealsLoading})
       : super(key: key);
 
+  double _getCardWidth(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 380) {
+      // Small screens - make cards wider to use available space
+      return screenWidth - 32; // Account for minimal padding
+    } else {
+      // Normal screens - use current width
+      return 330; // Slightly reduced from previous
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ComboBuilderProvider>(context);
@@ -144,7 +155,7 @@ class CropSelectionBody extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               SizedBox(
-                height: 220,
+                height: 180,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: 3,
@@ -162,7 +173,7 @@ class CropSelectionBody extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: 220,
+                height: 180,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: deals.length,
@@ -178,102 +189,128 @@ class CropSelectionBody extends StatelessWidget {
                         );
                       },
                       child: Container(
-                        width: 350,
+                        width: _getCardWidth(context),
                         margin: const EdgeInsets.only(right: 10),
-                        child: Card(
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 90,
-                                height: 220,
-                                child: Center(
-                                  child: GridView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      crossAxisSpacing: 2,
-                                      mainAxisSpacing: 2,
-                                    ),
-                                    itemCount: 4,
-                                    itemBuilder: (context, index) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          color: index == 3
-                                              ? Colors.grey[200]
-                                              : null,
+                        child: Stack(
+                          children: [
+                            Card(
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 90,
+                                    height: 180,
+                                    child: Center(
+                                      child: GridView.builder(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        shrinkWrap: true,
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 2,
+                                          mainAxisSpacing: 2,
                                         ),
-                                        child: index < 3
-                                            ? _buildDealImageForGrid(
-                                                deal, index)
-                                            : const SizedBox.shrink(),
-                                      );
-                                    },
+                                        itemCount: 4,
+                                        itemBuilder: (context, index) {
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              color: index == 3
+                                                  ? Colors.grey[200]
+                                                  : null,
+                                            ),
+                                            child: index < 3
+                                                ? _buildDealImageForGrid(
+                                                    deal, index)
+                                                : const SizedBox.shrink(),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        deal.title,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        deal.description,
-                                        style: const TextStyle(
-                                            fontSize: 12, color: Colors.grey),
-                                        maxLines: 6,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            '₹${deal.deal_price.toStringAsFixed(0)} / प्रति एकर',
+                                            deal.title,
                                             style: const TextStyle(
-                                                color: Color(0xFF44aa00),
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                          Chip(
-                                            label: Text(
-                                              deal.status,
-                                              style: const TextStyle(
-                                                  fontSize: 10,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                            backgroundColor:
-                                                _getStatusColor(deal.status),
-                                            materialTapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            deal.description,
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey),
+                                            maxLines: 4,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  '₹${deal.deal_price.toStringAsFixed(0)} / प्रति एकर',
+                                                  style: const TextStyle(
+                                                      color: Color(0xFF44aa00),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16),
+                                                ),
+                                              ),
+                                              Flexible(
+                                                child: Text(
+                                                  '${deal.spotsAvailable} जागा बाकी',
+                                                  style: const TextStyle(
+                                                    color: Colors.orange,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12,
+                                                  ),
+                                                  textAlign: TextAlign.right,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                    ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Deal status badge absolutely positioned at top left corner of card
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.green,
+                                ),
+                                child: const Text(
+                                  'Open',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -422,7 +459,7 @@ class ShimmerDealCard extends StatelessWidget {
             children: [
               Container(
                 width: 90,
-                height: 220,
+                height: 150,
                 color: Colors.white,
               ),
               Expanded(
