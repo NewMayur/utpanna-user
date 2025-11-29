@@ -533,7 +533,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
 
 🔗 ग्रुप पूर्ण व्हायच्या आधी जॉईन करा आणि आपला ऑर्डर बुक करा !
 
-👉 *जॉईन करा:* https://app.utpanna.in
+👉 *जॉईन करा:* https://utpanna.live
     """;
 
     try {
