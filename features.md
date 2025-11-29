@@ -9,7 +9,7 @@ This is a comprehensive **Product Requirements Document (PRD) and Technical Spec
 
 ## 1. Executive Summary
 
-We are introducing a "Group Buying" discovery tool. Farmers select their Crop and Objective (e.g., "Cotton" + "Growth") and are presented with a **Recommended Product Combo**. They can view the price per Acre or per Pump.
+We are introducing a "Group Buying" discovery tool. Farmers select their Crop and Objective (e.g., "Cotton" + "Growth") and are presented with a **Recommended Product Combo**. They can view the price प्रति एकर or प्रति पंप.
 
 - **Happy Path:** User views the recommended combo -> Clicks "Join Deal" -> API called with the existing Deal UUID.
 - **Customization Path:** User customizes quantities to estimate their budget. _Note: Custom combos cannot be turned into new deals dynamically due to backend constraints. Customization is purely a calculator._

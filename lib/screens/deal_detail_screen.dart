@@ -20,9 +20,65 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
   final Color accentColor = Color(0xFF44aa00);
   int _currentImageIndex = 0;
   final PageController _pageController = PageController();
+  Deal? _currentDeal;
+  bool _isLoadingDeal = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentDeal = widget.deal;
+    _fetchDealDetails();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh deal data when returning to this screen
+    if (!_isLoadingDeal) {
+      _fetchDealDetails();
+    }
+  }
+
+  Future<void> _fetchDealDetails() async {
+    setState(() {
+      _isLoadingDeal = true;
+    });
+
+    try {
+      String? idToken = await _authService.getIdToken();
+      if (idToken == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await http.get(
+        Uri.parse('${Constants.apiUrl}/deals/${widget.deal.id}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final dealJson = json.decode(response.body);
+        setState(() {
+          _currentDeal = Deal.fromJson(dealJson);
+          _isLoadingDeal = false;
+        });
+      } else {
+        throw Exception('Failed to load deal details');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingDeal = false;
+      });
+      // Keep existing deal data if fetch fails
+      print('Error fetching deal details: $e');
+    }
+  }
 
   String _getDealMessage() {
-    switch (widget.deal.status.toLowerCase()) {
+    if (_currentDeal == null) return "";
+    switch (_currentDeal!.status.toLowerCase()) {
       case 'closed':
         return "Group was completed and the deal is closed. We'll notify you once the deal reopens.";
       case 'open':
@@ -34,8 +90,9 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentDeal = _currentDeal ?? widget.deal;
     final dealMessage = _getDealMessage();
-    final showJoinButton = widget.deal.status.toLowerCase() == 'open';
+    final showJoinButton = currentDeal.status.toLowerCase() == 'open';
     final screenWidth = MediaQuery.of(context).size.width;
     final imageHeight = (screenWidth * 4) / 3; // 3:4 aspect ratio
 
@@ -68,7 +125,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         itemCount: widget.deal.images?.length ?? 1,
                         itemBuilder: (context, index) {
                           return AspectRatio(
-                            aspectRatio: 3/4,
+                            aspectRatio: 3 / 4,
                             child: Image.network(
                               widget.deal.images?.isNotEmpty == true
                                   ? widget.deal.images![index]
@@ -128,7 +185,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         ),
                         SizedBox(width: 16),
                         Text(
-                          '₹${widget.deal.deal_price.toStringAsFixed(2)}',
+                          '₹${widget.deal.deal_price.toStringAsFixed(2)} / प्रति एकर',
                           style: TextStyle(
                             color: accentColor,
                             fontWeight: FontWeight.bold,
@@ -155,7 +212,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                '${widget.deal.min_participants}',
+                                '${currentDeal.min_participants}',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -176,7 +233,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                '${widget.deal.spotsAvailable}',
+                                '${currentDeal.spotsAvailable}',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -233,7 +290,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Need any help?',
+                            'काही प्रश्न आहेत ? ',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -244,7 +301,8 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
                               // Implement call functionality
                             },
                             icon: Icon(Icons.phone, color: Colors.white),
-                            label: Text('Call us now', style: TextStyle(color: Colors.white)),
+                            label: Text('Call us now',
+                                style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: accentColor,
                               shape: RoundedRectangleBorder(
@@ -269,7 +327,7 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
               child: ElevatedButton(
                 onPressed: () => _showParticipateDialog(context),
                 child: Text(
-                  'Join the deal',
+                  'Join the Group',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -291,10 +349,9 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Join the Deal'),
+          title: Text('Join the Group'),
           content: Text(
-            "Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to join this deal?"
-          ),
+              "ग्रुप मध्ये लागणारे लोक भरले कि तुमचा ऑर्डर बुक होईल व मॅसेज येईल.  तर लवकर ग्रुपमध्ये जॉईन व्हा !"),
           actions: <Widget>[
             TextButton(
               child: Text('Cancel'),
@@ -376,18 +433,23 @@ class _DealDetailScreenState extends State<DealDetailScreen> {
 
                 if (detailsUpdated) {
                   try {
-                    bool participated = await _authService.participateInDeal(widget.deal.id, idToken);
+                    bool participated = await _authService.participateInDeal(
+                        widget.deal.id, idToken);
                     Navigator.of(context).pop();
                     if (participated) {
-                      _showParticipationConfirmation(context, 'Successfully joined the deal!');
+                      _showParticipationConfirmation(
+                          context, 'Successfully joined the deal!');
                     }
                   } catch (e) {
                     String errorMessage = e.toString();
                     if (errorMessage.contains('Already participated')) {
-                      _showParticipationConfirmation(context, 'You have already joined this deal');
+                      _showParticipationConfirmation(
+                          context, 'You have already joined this deal');
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to join deal: $errorMessage')),
+                        SnackBar(
+                            content:
+                                Text('Failed to Join Group: $errorMessage')),
                       );
                     }
                   }

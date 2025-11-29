@@ -88,7 +88,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
             ),
           ),
 
-          // Combo section at bottom - Accordion Style
+          // Always visible combo header with price, toggle, and buttons
           Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
@@ -104,7 +104,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Combo Header - Always Visible - Clean Structure
+                // Combo Header - Always Visible
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -148,14 +148,27 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                   ],
                 ),
 
+                // Expanded content between title and price
+                if (_comboAccordionExpanded) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 220),
+                    child: SingleChildScrollView(
+                      child:
+                          _buildExpandedComboContent(provider, recommendation),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
                 const SizedBox(height: 12),
 
-                // Always visible: Price and Toggle
+                // Always visible: Price
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Total Estimated Cost:',
+                      'एकूण अंदाजे खर्च:',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -164,7 +177,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                     Text(
                       '₹${provider.calculateTotal().toStringAsFixed(0)}',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: accentColor,
                       ),
@@ -186,7 +199,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ChoiceChip(
-                        label: const Text('Per Acre'),
+                        label: const Text('प्रति एकर'),
                         selected: provider.isByAcre,
                         onSelected: (selected) {
                           if (selected) provider.togglePricingMode();
@@ -194,7 +207,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                       ),
                       const SizedBox(width: 8),
                       ChoiceChip(
-                        label: const Text('Per Pump'),
+                        label: const Text('प्रति पंप'),
                         selected: !provider.isByAcre,
                         onSelected: (selected) {
                           if (selected) provider.togglePricingMode();
@@ -204,174 +217,48 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                   ),
                 ),
 
-                // Collapsible Content
-                if (_comboAccordionExpanded) ...[
-                  const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                  // Image collage of combo products
-                  _buildComboImageCollage(provider, recommendation),
-
-                  const SizedBox(height: 16),
-
-                  // Combo items with quantity inputs
-                  const Text(
-                    'Adjust Quantities (varies by land size):',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  ...recommendation.items.map((item) {
-                    final product = provider.getProductById(item.productId);
-                    if (product == null) return const SizedBox.shrink();
-
-                    final quantityText =
-                        provider.customQuantities[product.id]?.toString() ??
-                            item.qtyAcre.toString();
-                    final quantity =
-                        double.tryParse(quantityText) ?? item.qtyAcre;
-                    final itemTotal = quantity * product.price;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  product.name,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '₹${itemTotal.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF44aa00),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Text(
-                                'Quantity: ',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Expanded(
-                                child: SizedBox(
-                                  width: 100,
-                                  height: 40,
-                                  child: TextFormField(
-                                    initialValue: quantityText,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 4),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFF44aa00)),
-                                      ),
-                                      hintText: '0.0',
-                                    ),
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                            decimal: true),
-                                    style: const TextStyle(fontSize: 14),
-                                    onChanged: (value) {
-                                      final newQuantity =
-                                          double.tryParse(value) ?? 0.0;
-                                      if (newQuantity >= 0) {
-                                        provider.updateCustomQuantity(
-                                            product.id, newQuantity);
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                product.unit,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-
-                  const SizedBox(height: 16),
-
-                  // Action buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () {
-                            provider.initializeCustomQuantities();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const CustomizeComboScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'Customize Combo',
-                            style: TextStyle(
-                              color: accentColor,
-                              fontWeight: FontWeight.w500,
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          provider.initializeCustomQuantities();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CustomizeComboScreen(),
                             ),
+                          );
+                        },
+                        child: Text(
+                          'स्वतःचा कॉम्बो बनवा',
+                          style: TextStyle(
+                            color: accentColor,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              _showParticipateDialog(context, recommendation),
-                          icon: const Icon(Icons.group_add),
-                          label: const Text('Join Combo Deal'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accentColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () =>
+                            _showParticipateDialog(context, recommendation),
+                        icon: const Icon(Icons.group_add),
+                        label: const Text('Join the Group'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -387,7 +274,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
         return AlertDialog(
           title: const Text('Join the Combo Deal'),
           content: const Text(
-              "Payment will be processed only if the deal is confirmed. You will be notified once the deal reaches the required number of participants. Do you want to join this combo deal?"),
+              "ग्रुप मध्ये लागणारे लोक भरले कि तुमचा ऑर्डर बुक होईल व मॅसेज येईल.  तर लवकर ग्रुपमध्ये जॉईन व्हा !"),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
@@ -487,7 +374,7 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                             content:
-                                Text('Failed to join deal: $errorMessage')),
+                                Text('Failed to Join Group: $errorMessage')),
                       );
                     }
                   }
@@ -546,14 +433,6 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Combo Products:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey,
-            ),
-          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -562,6 +441,147 @@ class _ComboRecommendationScreenState extends State<ComboRecommendationScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildExpandedComboContent(
+      ComboBuilderProvider provider, Recommendation recommendation) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Combo Products Image Collage
+        _buildComboImageCollage(provider, recommendation),
+
+        const SizedBox(height: 16),
+
+        // Combo items with quantity inputs - Scrollable if long
+        const Text(
+          'तुमच्या जमिनीनुसार प्रमाण ठेवा',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Remove the fixed height SingleChildScrollView since it's already in the main scrollview
+        Column(
+          children: recommendation.items.map((item) {
+            final product = provider.getProductById(item.productId);
+            if (product == null) return const SizedBox.shrink();
+
+            final quantityText =
+                provider.customQuantities[product.id]?.toString() ??
+                    item.qtyAcre.toString();
+            final quantity = double.tryParse(quantityText) ?? item.qtyAcre;
+            final itemTotal = quantity * product.price;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Left section: Product name with unit and base price
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${product.unit} • ₹${product.price.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Middle section: Required quantity input
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Required Quantity',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        SizedBox(
+                          width: 80,
+                          height: 32,
+                          child: TextFormField(
+                            initialValue: quantityText,
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide:
+                                    const BorderSide(color: Colors.grey),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide:
+                                    const BorderSide(color: Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF44aa00)),
+                              ),
+                              hintText: '0.0',
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            style: const TextStyle(fontSize: 12),
+                            onChanged: (value) {
+                              final newQuantity = double.tryParse(value) ?? 0.0;
+                              if (newQuantity >= 0) {
+                                provider.updateCustomQuantity(
+                                    product.id, newQuantity);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Right section: Reflecting price
+                  SizedBox(
+                    width: 60,
+                    child: Text(
+                      '₹${itemTotal.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF44aa00),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

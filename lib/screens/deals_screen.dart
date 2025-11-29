@@ -31,6 +31,15 @@ class _DealsScreenState extends State<DealsScreen> {
     _fetchDeals();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh data when returning to this screen
+    if (!isLoading) {
+      _fetchDeals();
+    }
+  }
+
   Future<void> _fetchDeals() async {
     setState(() {
       isLoading = true;
@@ -130,7 +139,8 @@ class _DealsScreenState extends State<DealsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DealDetailScreen(deal: deal),
+                                builder: (context) =>
+                                    DealDetailScreen(deal: deal),
                               ),
                             );
                           },
@@ -148,8 +158,8 @@ class _DealsScreenState extends State<DealsScreen> {
                                     bottomLeft: Radius.circular(8),
                                   ),
                                   child: Image.network(
-                                    deal.images?.isNotEmpty == true 
-                                        ? deal.images![0] 
+                                    deal.images?.isNotEmpty == true
+                                        ? deal.images![0]
                                         : 'https://placehold.co/300x400',
                                     width: 120,
                                     height: 160,
@@ -160,7 +170,8 @@ class _DealsScreenState extends State<DealsScreen> {
                                   child: Padding(
                                     padding: EdgeInsets.all(12),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           deal.title,
@@ -180,18 +191,21 @@ class _DealsScreenState extends State<DealsScreen> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         SizedBox(height: 12),
-                                        Row(
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'MRP: ₹${deal.mrp.toStringAsFixed(2)}',
                                               style: TextStyle(
-                                                decoration: TextDecoration.lineThrough,
+                                                decoration:
+                                                    TextDecoration.lineThrough,
                                                 color: Colors.grey[600],
                                               ),
                                             ),
-                                            SizedBox(width: 12),
+                                            SizedBox(height: 8),
                                             Text(
-                                              '₹${deal.deal_price.toStringAsFixed(2)}',
+                                              '₹${deal.deal_price.toStringAsFixed(2)} / प्रति एकर',
                                               style: TextStyle(
                                                 color: accentColor,
                                                 fontWeight: FontWeight.bold,
@@ -202,7 +216,8 @@ class _DealsScreenState extends State<DealsScreen> {
                                         ),
                                         SizedBox(height: 8),
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Chip(
                                               label: Text(
@@ -212,8 +227,11 @@ class _DealsScreenState extends State<DealsScreen> {
                                                   fontSize: 12,
                                                 ),
                                               ),
-                                              backgroundColor: _getStatusColor(deal.status),
-                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              backgroundColor:
+                                                  _getStatusColor(deal.status),
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
                                             ),
                                             Text(
                                               '${deal.spotsAvailable} spots left',
@@ -244,7 +262,7 @@ class _DealsScreenState extends State<DealsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Need any help?',
+                          'काही प्रश्न आहेत ? ',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -255,7 +273,8 @@ class _DealsScreenState extends State<DealsScreen> {
                             // Implement call functionality
                           },
                           icon: Icon(Icons.phone, color: Colors.white),
-                          label: Text('Call us now', style: TextStyle(color: Colors.white)),
+                          label: Text('Call us now',
+                              style: TextStyle(color: Colors.white)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentColor,
                             shape: RoundedRectangleBorder(

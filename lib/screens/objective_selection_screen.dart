@@ -24,7 +24,7 @@ class ObjectiveSelectionScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Objectives for ${selectedCrop.name}'),
+        title: Text('${selectedCrop.name} साठी फवारणी'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -32,7 +32,7 @@ class ObjectiveSelectionScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Choose your farming objective to get personalized product recommendations',
+              'पिक कोणत्या टप्प्यात आहे ते निवडा, त्यानुसार उत्पादन मिळेल.',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,

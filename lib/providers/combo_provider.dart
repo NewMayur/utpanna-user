@@ -113,12 +113,12 @@ class ComboBuilderProvider with ChangeNotifier {
     }
 
     // Apply pricing mode logic based on Maharashtra agricultural practices
-    // The quantities entered are treated as "per acre" quantities
+    // The quantities entered are treated as "प्रति एकर" quantities
     if (_isByAcre) {
-      // Per Acre: Show total cost for 1 acre application
+      // प्रति एकर: Show total cost for 1 acre application
       return total;
     } else {
-      // Per Pump: Show cost for one pump application = total acre cost ÷ pumps per acre
+      // प्रति पंप: Show cost for one pump application = total acre cost ÷ pumps प्रति एकर
       return total / pumpsPerAcre;
     }
   }

@@ -38,7 +38,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
     if (recommendation == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Customize Combo'),
+          title: const Text('स्वतःचा कॉम्बो बनवा'),
         ),
         body: const Center(
           child: Text('No recommendation available'),
@@ -50,7 +50,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Customize Combo'),
+        title: const Text('स्वतःचा कॉम्बो बनवा'),
       ),
       body: Column(
         children: [
@@ -60,7 +60,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
             padding: const EdgeInsets.all(16.0),
             color: Colors.orange.shade100,
             child: const Text(
-              'Customization is for cost estimation only. Deals are available on standard packs.',
+              'स्वतःचा कॉम्बो फक्त खर्च मोजणीसाठी आहे. सध्या ठरलेला कॉम्बोच फक्त खरेदी करता येणार.',
               style: TextStyle(
                 color: Colors.orange,
                 fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Adjust quantities to see different pricing options',
+                    'तुमच्या जमिनीनुसार प्रमाण ठेवा',
                     style: TextStyle(
                       color: Colors.grey,
                     ),
@@ -117,7 +117,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Total Estimated Cost:',
+                      'एकूण अंदाजे खर्च:',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -147,7 +147,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ChoiceChip(
-                        label: const Text('Per Acre'),
+                        label: const Text('प्रति एकर'),
                         selected: provider.isByAcre,
                         onSelected: (selected) {
                           if (selected) provider.togglePricingMode();
@@ -155,7 +155,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
                       ),
                       const SizedBox(width: 8),
                       ChoiceChip(
-                        label: const Text('Per Pump'),
+                        label: const Text('प्रति पंप'),
                         selected: !provider.isByAcre,
                         onSelected: (selected) {
                           if (selected) provider.togglePricingMode();
@@ -173,7 +173,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Text('Reset to Recommended'),
+                        child: const Text('रीसेट करा'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -195,7 +195,7 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
                                 ),
                               )
                             : const Text(
-                                'Join Deal',
+                                'Join Group',
                                 style: TextStyle(color: Colors.white),
                               ),
                       ),
@@ -262,34 +262,161 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
               color: isIncluded ? Colors.white : Colors.grey[100],
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            product.name,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isIncluded ? Colors.black : Colors.grey,
+                child: isIncluded
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Left section: Product name with unit and base price
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.name,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${product.unit} • ₹${product.price.toStringAsFixed(0)}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        if (isIncluded)
-                          TextButton.icon(
-                            onPressed: () =>
-                                provider.removeProductFromCustom(product.id),
-                            icon: Icon(Icons.remove_circle,
-                                size: 20, color: Colors.red[400]),
-                            label: const Text('Remove'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.red[400],
-                              textStyle: const TextStyle(fontSize: 12),
+
+                          // Middle section: Required quantity input
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Required Quantity',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                SizedBox(
+                                  width: 80,
+                                  height: 36,
+                                  child: TextFormField(
+                                    initialValue: quantityText,
+                                    textAlign: TextAlign.center,
+                                    decoration: InputDecoration(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFF44aa00)),
+                                      ),
+                                      hintText: '0.0',
+                                    ),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    style: const TextStyle(fontSize: 14),
+                                    onChanged: (value) {
+                                      final newQuantity =
+                                          double.tryParse(value) ?? 0.0;
+                                      if (newQuantity >= 0) {
+                                        provider.updateCustomQuantity(
+                                            product.id, newQuantity);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        else
+                          ),
+
+                          // Right section: Remove button and Reflecting price
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Remove button
+                              TextButton.icon(
+                                onPressed: () => provider
+                                    .removeProductFromCustom(product.id),
+                                icon: Icon(Icons.remove_circle,
+                                    size: 16, color: Colors.red[400]),
+                                label: const Text('Remove'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red[400],
+                                  textStyle: const TextStyle(fontSize: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 2),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              // Price
+                              SizedBox(
+                                width: 60,
+                                child: Text(
+                                  '₹${itemPrice.toStringAsFixed(0)}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF44aa00),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Left: Product name, unit/price, and add button
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.name,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${product.unit} • ₹${product.price.toStringAsFixed(0)}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Right: Add button
                           TextButton.icon(
                             onPressed: () =>
                                 provider.addProductToCustom(product.id),
@@ -301,75 +428,8 @@ class _CustomizeComboScreenState extends State<CustomizeComboScreen> {
                               textStyle: const TextStyle(fontSize: 12),
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (isIncluded) ...[
-                      Row(
-                        children: [
-                          const Text(
-                            'Quantity: ',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Expanded(
-                            child: SizedBox(
-                              width: 80,
-                              height: 36,
-                              child: TextFormField(
-                                initialValue: quantityText,
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  hintText: '0.0',
-                                ),
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                style: const TextStyle(fontSize: 14),
-                                onChanged: (value) {
-                                  final newQuantity =
-                                      double.tryParse(value) ?? 0.0;
-                                  if (newQuantity >= 0) {
-                                    provider.updateCustomQuantity(
-                                        product.id, newQuantity);
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            product.unit,
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.grey),
-                          ),
                         ],
                       ),
-                    ] else ...[
-                      Text(
-                        'Quantity: 1.0 ${product.unit}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 4),
-                    Text(
-                      'Price: ₹${itemPrice.toStringAsFixed(0)}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: isIncluded ? Colors.black : Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             );
           }).toList(),

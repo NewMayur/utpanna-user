@@ -18,7 +18,7 @@
     {
       "id": "c_tur",
       "name": "तूर",
-      "image_asset": "assets/crops/turmeric.png"
+      "image_asset": "assets/crops/tur.png"
     }
   ],
   "objectives": [
@@ -50,6 +50,16 @@
       "active_deal_uuid": null
     },
     {
+      "id": "p_neem",
+      "name": "Neem Oil",
+      "category": "कीटकनाशके",
+      "price": 600,
+      "mrp": 660,
+      "unit": "1 L",
+      "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_10644437461733223402.webp",
+      "active_deal_uuid": null
+    },
+    {
       "id": "p_fungi",
       "name": "STUFF",
       "category": "बुरशीनाशके",
@@ -57,6 +67,16 @@
       "mrp": 125,
       "unit": "100 g",
       "image_url": "https://dujjhct8zer0r.cloudfront.net/media/prod_image/thumb/thumb222255_18398562481746271904.webp",
+      "active_deal_uuid": null
+    },
+    {
+      "id": "p_roko",
+      "name": "Roko",
+      "category": "बुरशीनाशके",
+      "price": 900,
+      "mrp": 1225,
+      "unit": "1 Kg",
+      "image_url": "https://cdn2.zohoecommerce.com/product-images/Roko+Fungicide.webp/2830499000000679995/800x800?storefront_domain=www.manaagrimart.com",
       "active_deal_uuid": null
     },
     {
@@ -114,13 +134,12 @@
     {
       "crop_id": "c_chana",
       "objective_id": "obj_growth",
-      "deal_uuid": "49823ec2-8ef4-43e2-8bcb-349217971df6",
+      "deal_uuid": "1dd37eda-6900-4f61-8898-6bc6f191f703",
       "combo_title": "Chana Growth Combo",
       "items": [
-        { "product_id": "p_nitro", "qty_acre": 1, "qty_pump": 0.08 },
-        { "product_id": "p_pestx", "qty_acre": 1, "qty_pump": 0.05 },
-        { "product_id": "p_fruit", "qty_acre": 1, "qty_pump": 0.04 },
-        { "product_id": "p_fungi", "qty_acre": 1, "qty_pump": 0.05 }
+        { "product_id": "p_nitro", "qty_acre": 0.1, "qty_pump": 0.1 },
+        { "product_id": "p_neem", "qty_acre": 0.2, "qty_pump": 0.2 },
+        { "product_id": "p_roko", "qty_acre": 0.2, "qty_pump": 0.2 }
       ]
     },
     {

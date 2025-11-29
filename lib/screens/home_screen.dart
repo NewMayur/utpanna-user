@@ -2,13 +2,17 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:utpanna/models/product.dart';
+import 'package:utpanna/models/deal.dart';
 import 'package:utpanna/providers/combo_provider.dart';
 import 'package:utpanna/screens/deals_screen.dart';
 import 'package:utpanna/screens/objective_selection_screen.dart';
+import 'package:utpanna/screens/deal_detail_screen.dart';
 import 'package:utpanna/utils/constants.dart';
+import 'package:utpanna/services/auth_service.dart';
 import 'package:utpanna/widgets/product_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,51 +23,45 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Product> products = [];
+  List<Deal> deals = [];
+  bool dealsLoading = true;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
-    fetchProducts();
+    _fetchDeals();
   }
 
-  bool _isLoading = true;
-  String _errorMessage = '';
-
-  Future<void> fetchProducts() async {
+  Future<void> _fetchDeals() async {
     setState(() {
-      _isLoading = true;
-      _errorMessage = '';
+      dealsLoading = true;
     });
-
     try {
-      final response = await http.get(
-        Uri.parse(Constants.productsApi),
-        headers: {'Accept': 'application/json'},
-      ).timeout(
-        Duration(seconds: Constants.timeoutDuration),
-        onTimeout: () {
-          throw TimeoutException('Connection timed out');
-        },
-      );
+      String? idToken = await _authService.getIdToken();
+      if (idToken != null) {
+        final response = await http.get(
+          Uri.parse('${Constants.apiUrl}/deals'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $idToken',
+          },
+        );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> productList = jsonDecode(response.body);
-        setState(() {
-          products = productList.map((e) => Product.fromJson(e)).toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _errorMessage =
-              'Failed to load products. Status code: ${response.statusCode}';
-          _isLoading = false;
-        });
+        if (response.statusCode == 200) {
+          final List<dynamic> dealsJson = json.decode(response.body);
+          setState(() {
+            deals = dealsJson
+                .map((json) => Deal.fromJson(json))
+                .where((d) => d.status == 'open')
+                .toList();
+            dealsLoading = false;
+          });
+        }
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error: ${e.toString()}';
-        _isLoading = false;
+        dealsLoading = false;
       });
     }
   }
@@ -90,82 +88,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (context) => const DealsScreen()),
                   );
                   break;
-                case 'products':
-                  _showProductsScreen(context);
-                  break;
               }
             },
             itemBuilder: (BuildContext context) => [
               const PopupMenuItem<String>(
                 value: 'group_deals',
-                child: Text('Group Deals'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'products',
-                child: Text('Products'),
+                child: Text('ग्रुप खरेदी'),
               ),
             ],
           ),
         ],
       ),
-      body: const CropSelectionBody(),
-    );
-  }
-
-  void _showProductsScreen(BuildContext context) {
-    // Navigate to the original product list screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(title: const Text('Products')),
-          body: Column(
-            children: [
-              Image.asset(
-                'assets/images/banner.jpg',
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _errorMessage.isNotEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _errorMessage,
-                                  style: const TextStyle(color: Colors.red),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: fetchProducts,
-                                  child: const Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : products.isEmpty
-                            ? const Center(child: Text('No products found'))
-                            : ListView.builder(
-                                itemCount: products.length,
-                                itemBuilder: (context, index) {
-                                  return ProductCard(product: products[index]);
-                                },
-                              ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: CropSelectionBody(deals: deals, dealsLoading: dealsLoading),
     );
   }
 }
 
 class CropSelectionBody extends StatelessWidget {
-  const CropSelectionBody({Key? key}) : super(key: key);
+  final List<Deal> deals;
+  final bool dealsLoading;
+  const CropSelectionBody(
+      {Key? key, required this.deals, required this.dealsLoading})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -190,20 +134,168 @@ class CropSelectionBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (dealsLoading) ...[
+              const Text(
+                'पिके',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              SizedBox(
+                height: 220,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 3,
+                  itemBuilder: (context, index) => const ShimmerDealCard(),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ] else if (deals.isNotEmpty) ...[
+              const Text(
+                'ग्रुप खरेदी',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 220,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: deals.length,
+                  itemBuilder: (context, index) {
+                    final deal = deals[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DealDetailScreen(deal: deal),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 350,
+                        margin: const EdgeInsets.only(right: 10),
+                        child: Card(
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 90,
+                                height: 220,
+                                child: Center(
+                                  child: GridView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 2,
+                                      mainAxisSpacing: 2,
+                                    ),
+                                    itemCount: 4,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          color: index == 3
+                                              ? Colors.grey[200]
+                                              : null,
+                                        ),
+                                        child: index < 3
+                                            ? _buildDealImageForGrid(
+                                                deal, index)
+                                            : const SizedBox.shrink(),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        deal.title,
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        deal.description,
+                                        style: const TextStyle(
+                                            fontSize: 12, color: Colors.grey),
+                                        maxLines: 6,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            '₹${deal.deal_price.toStringAsFixed(0)} / प्रति एकर',
+                                            style: const TextStyle(
+                                                color: Color(0xFF44aa00),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14),
+                                          ),
+                                          Chip(
+                                            label: Text(
+                                              deal.status,
+                                              style: const TextStyle(
+                                                  fontSize: 10,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            backgroundColor:
+                                                _getStatusColor(deal.status),
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
             const Text(
-              'Choose your crop to get personalized product recommendations',
+              'पिके',
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
                   childAspectRatio: 1,
                 ),
                 itemCount: provider.farmingData!.crops.length,
@@ -221,37 +313,45 @@ class CropSelectionBody extends StatelessWidget {
                       );
                     },
                     child: Card(
+                      margin: EdgeInsets.zero,
                       elevation: 4,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Placeholder for crop image
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                            child: const Icon(
-                              Icons.grass,
-                              size: 40,
-                              color: Colors.green,
+                      child: Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                            image: AssetImage(crop.imageAsset.isNotEmpty
+                                ? crop.imageAsset
+                                : 'assets/crops/cotton.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.7),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
+                          alignment: Alignment.center,
+                          child: Text(
                             crop.name,
                             style: const TextStyle(
+                              color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   );
@@ -259,6 +359,92 @@ class CropSelectionBody extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDealImage(Deal deal, int index) {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.network(
+          deal.images != null && deal.images!.length > index
+              ? deal.images![index]
+              : 'https://placehold.co/90x70',
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDealImageForGrid(Deal deal, int index) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: Image.network(
+        deal.images != null && deal.images!.length > index
+            ? deal.images![index]
+            : 'https://placehold.co/90x70',
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return Colors.green;
+      case 'closed':
+        return Colors.red;
+      case 'starting soon':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+}
+
+class ShimmerDealCard extends StatelessWidget {
+  const ShimmerDealCard({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 280,
+      margin: const EdgeInsets.only(right: 10),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Card(
+          child: Row(
+            children: [
+              Container(
+                width: 90,
+                height: 220,
+                color: Colors.white,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(height: 16, color: Colors.white),
+                      const SizedBox(height: 4),
+                      Container(height: 12, color: Colors.white),
+                      const SizedBox(height: 8),
+                      Container(height: 14, width: 60, color: Colors.white),
+                      const SizedBox(height: 8),
+                      Container(height: 24, width: 80, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
